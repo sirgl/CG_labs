@@ -7,9 +7,6 @@ const auto USAGE = "usage: <config file> [<output file>]";
 
 int main(int argc, char *argv[]){
     QApplication a(argc, argv);
-    argc = 3;
-    char* argv1[] = {"", "1.json", "1.png"};
-    argv = argv1;
     if (1 == argc) {
         MainWindow w;
         w.show();
