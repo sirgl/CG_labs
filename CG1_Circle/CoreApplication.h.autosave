@@ -1,0 +1,8 @@
+#pragma once
+
+class CoreApplication
+{
+public:
+    CoreApplication();
+    void execute(int argc, char** argv);
+};
