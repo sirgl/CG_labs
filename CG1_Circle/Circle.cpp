@@ -106,7 +106,7 @@ void Circle::loadFromJson(QJsonObject& object) {
 	}
 	auto x = xTmp.toInt();
 	auto yTmp = position["y"];
-	if (!xTmp.isDouble()) {
+    if (!yTmp.isDouble()) {
 		throw ParserException("Y must be numeric");
 	}
 	auto y = position["y"].toInt();

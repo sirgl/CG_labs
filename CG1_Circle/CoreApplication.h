@@ -1,11 +1,7 @@
-#ifndef COREAPPLICATION_H
-#define COREAPPLICATION_H
+#pragma once
 
-
-class CoreApplication
-{
+class CoreApplication{
 public:
     CoreApplication();
+    int exec(int argc, char** argv);
 };
-
-#endif // COREAPPLICATION_H

@@ -1,6 +1,14 @@
 #include "Panel.h"
 #include "ParserException.h"
 
+int Panel::getXSize() const{
+    return xSize;
+}
+
+int Panel::getYSize() const{
+    return ySize;
+}
+
 Panel::Panel(int xSize, int ySize) : xSize(xSize), ySize(ySize) {}
 
 Panel::Panel() : Panel(0, 0){}
@@ -37,4 +45,5 @@ QJsonObject Panel::saveToJson(){
 const Panel &Panel::operator=(const Panel &panel){
     xSize = panel.xSize;
     ySize = panel.ySize;
+    return *this;
 }

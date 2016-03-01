@@ -18,4 +18,6 @@ public:
     QJsonObject saveToJson();
 
     const Panel& operator=(const Panel& panel);
+    int getXSize() const;
+    int getYSize() const;
 };
