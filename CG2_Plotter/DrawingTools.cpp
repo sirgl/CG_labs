@@ -40,8 +40,7 @@ namespace DrawingTools {
         drawPixel(image, point, new QColor(0, 0, 0));
     }
 
-    int getUnique()
-    {
+    int getUnique()    {
         return uniquePoints.size();
     }
 

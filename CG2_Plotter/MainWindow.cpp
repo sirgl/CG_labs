@@ -24,21 +24,29 @@ void MainWindow::initControlsBox(){
     QVBoxLayout* controlsLayout = new QVBoxLayout();
     controlsBox->setLayout(controlsLayout);
     controlsBox->setFixedWidth(200);
-    xGroup = new PickGroup;
-    xGroup->setLabel("Position X");
-    xGroup->setMin(MIN_X_CONTROLS);
-    xGroup->setMax(MAX_X_CONTROLS);
-    controlsLayout->addWidget(xGroup);
-    yGroup = new PickGroup;
-    yGroup->setLabel("Position Y");
-    yGroup->setMin(MIN_Y_CONTROLS);
-    yGroup->setMax(MAX_Y_CONTROLS);
-    controlsLayout->addWidget(yGroup);
-    rGroup = new PickGroup;
-    rGroup->setLabel("R");
-    rGroup->setMin(MIN_R_CONTROLS);
-    rGroup->setMax(MAX_R_CONTROLS);
-    controlsLayout->addWidget(rGroup);
+    x1Group = new PickGroup;
+    x1Group->setLabel("X 1");
+    x1Group->setMin(MIN_X_CONTROLS);
+    x1Group->setMax(MAX_X_CONTROLS);
+    controlsLayout->addWidget(x1Group);
+
+    y1Group = new PickGroup;
+    y1Group->setLabel("Y 1");
+    y1Group->setMin(MIN_Y_CONTROLS);
+    y1Group->setMax(MAX_Y_CONTROLS);
+    controlsLayout->addWidget(y1Group);
+
+    x2Group = new PickGroup;
+    x2Group->setLabel("X 2");
+    x2Group->setMin(MIN_X_CONTROLS);
+    x2Group->setMax(MAX_X_CONTROLS);
+    controlsLayout->addWidget(x2Group);
+
+    y2Group = new PickGroup;
+    y2Group->setLabel("Y 2");
+    y2Group->setMin(MIN_X_CONTROLS);
+    y2Group->setMax(MAX_X_CONTROLS);
+    controlsLayout->addWidget(y2Group);
 
     mainLayout->addWidget(controlsBox);
 }
@@ -54,7 +62,7 @@ void MainWindow::initMainBox(){
     setCentralWidget(mainBox);
 }
 
-void MainWindow::initCircleController(){
+void MainWindow::initLemniscateController(){
     Circle* circle = new Circle();
     circle->setPosition(100, 100);
     circle->setRadius(30);
@@ -66,24 +74,31 @@ void MainWindow::initCircleController(){
     canvasWidget->add(yAxis);
 
     Lemniscate* lem = new Lemniscate;
-    lem->setFocuses(-200, 0, 200, 0);
+    lem->setFocuses(0, -10, 0, 10);
     canvasWidget->add(lem);
 
-    canvasWidget->add(circle);
+    lemniscateController = new LemniscateController;
+    lemniscateController->setX1Group(x1Group);
+    lemniscateController->setY1Group(y1Group);
+    lemniscateController->setX2Group(x2Group);
+    lemniscateController->setY2Group(y2Group);
+    lemniscateController->setLemniscate(lem);
 
-    circleController = new CircleController;
-    circleController->setParent(this);
-    circleController->setXGroup(xGroup);
-    circleController->setYGroup(yGroup);
-    circleController->setRGroup(rGroup);
-    circleController->setCircle(circle);
+//    canvasWidget->add(circle);
+
+//    circleController = new CircleController;
+//    circleController->setParent(this);
+//    circleController->setXGroup(xGroup);
+//    circleController->setYGroup(yGroup);
+//    circleController->setRGroup(rGroup);
+//    circleController->setCircle(circle);
 }
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent){
     initMainBox();
     initControlsBox();
-    initCircleController();
+    initLemniscateController();
     initMenu();
     resize(800, 600);
 }
@@ -101,7 +116,8 @@ void MainWindow::loadConfig() {
         auto json = Tools::loadJsonFromFile(path);
         Config config;
         config.loadFromJson(json);
-        circleController->setCircle(config.circle);
+//        circleController->setCircle(config.circle);
+        //TODO
         canvasWidget->removeAll();
         canvasWidget->add(config.circle);
     }
@@ -113,12 +129,13 @@ void MainWindow::loadConfig() {
 void MainWindow::saveConfig() {
     auto savePath = QFileDialog::getSaveFileName();
     auto panel = new Panel(canvasWidget->getCanvasWidth(), canvasWidget->getCanvasHeight());
-    Config config(circleController->getCircle(), panel);
-    auto json = config.saveToJson();
-    QFile file(savePath);
-    file.open(QIODevice::WriteOnly);
-    QTextStream stream;
-    stream.setDevice(&file);
-    stream << QString(QJsonDocument(json).toJson());
-    file.close();
+    //TODO
+//    Config config(circleController->getCircle(), panel);
+//    auto json = config.saveToJson();
+//    QFile file(savePath);
+//    file.open(QIODevice::WriteOnly);
+//    QTextStream stream;
+//    stream.setDevice(&file);
+//    stream << QString(QJsonDocument(json).toJson());
+//    file.close();
 }

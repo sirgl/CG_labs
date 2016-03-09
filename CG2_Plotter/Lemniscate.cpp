@@ -5,6 +5,50 @@
 #include <DrawingTools.h>
 
 
+int Lemniscate::getX1() const{
+    return x1;
+}
+
+int Lemniscate::getY1() const{
+    return y1;
+}
+
+int Lemniscate::getX2() const{
+    return x2;
+}
+
+int Lemniscate::getY2() const{
+    return y2;
+}
+
+void Lemniscate::setX1(int value){
+    x1 = value;
+    computeParam();
+    emit redraw();
+}
+
+void Lemniscate::setY1(int value){
+    y1 = value;
+    computeParam();
+    emit redraw();
+}
+
+void Lemniscate::setX2(int value){
+    x2 = value;
+    computeParam();
+    emit redraw();
+}
+
+void Lemniscate::setY2(int value){
+    y2 = value;
+    computeParam();
+    emit redraw();
+}
+
+void Lemniscate::computeParam(){
+    param = ((long)(x1 - x2) * (x1 - x2)  + (y1 - y2) * (y1 - y2)) * ((x1 - x2) * (x1 - x2)  + (y1 - y2) * (y1 - y2));
+}
+
 Lemniscate::Lemniscate() :
     Drawable(),
     x1(0),
@@ -30,7 +74,8 @@ void Lemniscate::setFocuses(int x1, int y1, int x2, int y2){
     this->y1 = y1;
     this->x2 = x2;
     this->y2 = y2;
-    param = ((long)(x1 - x2) * (x1 - x2)  + (y1 - y2) * (y1 - y2)) * ((x1 - x2) * (x1 - x2)  + (y1 - y2) * (y1 - y2));
+    computeParam();
+    emit redraw();
 }
 
 void Lemniscate::loadFromJson(QJsonObject object){
@@ -90,14 +135,14 @@ void Lemniscate::draw(QImage *image){
     auto startingPoint = getStartingPoint();
     auto r = getR(Point(14, -1));
     DrawingTools::drawPixel(image, startingPoint);
+    auto x = DrawingTools::getUnique();
     auto currentPoint = startingPoint;
-    for(int i = 0; i < 2000; ++i) {
+    for(int i = 0; i < 1288; ++i) {
         auto nextPoint = getNextPoint(currentPoint);
         DrawingTools::drawPixel(image, nextPoint);
         currentPoint = nextPoint;
     }
-    auto x = DrawingTools::getUnique();
-    qDebug() << x;
+    qDebug() << DrawingTools::getUnique() << "unique points";
 }
 
 Point Lemniscate::getStartingPoint(){
