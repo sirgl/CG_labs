@@ -154,38 +154,27 @@ QJsonObject Lemniscate::saveToJson(){
 }
 
 void Lemniscate::draw(QImage *image){
-//    auto x3 = (y2 - y1) * 2;
-//    auto y3 = (x1 - x2) * 2;
-//    auto x4 = (y2 - y1);
-//    auto y4 = (x1 - x2);
-//    auto width = image->width();
-//    auto height = image->height();
-//    for(int y = - height - 1; y < height / 2; ++y) {
-//        for(int x = -width - 1; x < width / 2; ++x) {
-//            auto r = ((x1 - x) * (y2 - y) - (y1 - y) * (x2 - x))/*((x3 - x) * (y4 - y) - (y3 - y) * (x4 - x))*/;
-//            if(r > 0) {
-//                DrawingTools::drawPixel(image, x, y, new QColor(50, 0, 0));
-//            } else {
-//                DrawingTools::drawPixel(image, x, y, new QColor(0 , 50, 0));
-//            }
-//        }
-//    }
-//    DrawingTools::drawPixel(image, x1 , y1, new QColor(255,255,255));
-//    DrawingTools::drawPixel(image, x2 , y2, new QColor(255,255,255));
-//    auto pair = getStartingPoints();
-
-//    auto seconds = computeSecondPoints(pair.first);
-//    DrawingTools::drawPixel(image, pair.first, new QColor(0,0,255));
-//    DrawingTools::drawPixel(image, seconds.first.first, new QColor(255,0,255));
-//    DrawingTools::drawPixel(image, seconds.second.first, new QColor(255,0,255));
-
-    auto traits = computeQuartersTraits();
-    auto s = getStartingPoints();
-    for(auto trait : traits) {
-        drawQuarter(trait, image, s.first, s.second);
+    if(abs(x1 - x2) + abs(y1 - y2) >4) {
+        auto x = getStartingPointsPairs();
+        QVector<QuarterTraits> traits;
+        traits.push_back(QuarterTraits(x.first.first, x.first.second, isPositiveSided(x.first.second)));
+        traits.push_back(QuarterTraits(x.first.second, x.first.first, isPositiveSided(x.first.first)));
+        traits.push_back(QuarterTraits(x.second.first, x.second.second, isPositiveSided(x.second.second)));
+        traits.push_back(QuarterTraits(x.second.second, x.second.first, isPositiveSided(x.second.first)));
+        for(auto trait : traits) {
+            drawQuarter(trait, image);
+        }
     }
-    auto f = 0;
-
+    Circle f1;
+    f1.setX(x1);
+    f1.setY(-y1);
+    f1.setRadius(2);
+    f1.draw(image);
+    Circle f2;
+    f2.setX(x2);
+    f2.setY(-y2);
+    f2.setRadius(2);
+    f2.draw(image);
 }
 
 QPair<Point, Point> Lemniscate::getStartingPoints(){
@@ -214,9 +203,6 @@ Point Lemniscate::getStartingPoint(Point nextPoint){
     Point startingPoint = abs(getR(currentX, currentY) - param) <= abs(getR(nextX, nextY) - param)
             ? Point(currentX, currentY)
             : Point(nextX, nextY);
-
-//    auto sides = getNeighborSides(startingPoint);
-//    auto count = std::count_if(sides.begin(), sides.end(), [](QPair<Point, bool> p){return p.second == true;});
     return startingPoint;
 }
 
@@ -227,84 +213,42 @@ long long Lemniscate::getR(int x, int y){
 }
 
 long long Lemniscate::getR(Point p){
-
     return getR(p.x, p.y);
 }
 
-Point Lemniscate::getNextPoint(Point currentPoint, Point previousPoint, bool isPositive, Point firstPoint, Point secondPoint){
-    auto previousPointNeighborPosition = getNeighborPosition(currentPoint, previousPoint);
-    QVector<Point> candidates;
-    for (int i = 3; i < 6; ++i) {
-        Point point = currentPoint + getNeighbor(previousPointNeighborPosition + i);
-        if(centralPoints.contains(point)) {
-            return point;
-        }
-        if(isPositiveSided(point, firstPoint, secondPoint) != isPositive) {
-            throw NoAvailablePointsException();
-        }
-        candidates.append(point);
-    }
-    if(candidates.empty()) {
-        throw NoAvailablePointsException();
-    }
-//    QVector<long> params; // debug
-//    for(auto p : candidates) {
-//        params.push_back(abs(getR(p) - param));
-//    }
-    int position = std::min_element(candidates.begin(), candidates.end(), [&](Point p1, Point p2){
-        return abs(getR(p1) - param) < abs(getR(p2) - param);
-    }) - candidates.begin();
-
-//    QVector<long> parameters;
-//    QVector<Point> points; // debug
-//        for (int i = 0; i < 8; ++i) {
-//            Point p = getNeighbor(i) + previousPoint;
-//            points.push_back(p);
-//            parameters.push_back(getR(p) - param);
-//        }
-//    qDebug() << "picked point with " << getR(candidates[position]) - param; // debug
-    return candidates[position];
-}
-
-//QVector<QPair<Point, long> > Lemniscate::getNeighborParams(Point point){
-//    QVector<QPair<Point, long> > vector;
-//    for(int i = 0; i < 8; ++i) {
-//        Point p = point + getNeighbor(i);
-//        vector.push_back(QPair<Point, long>(p, getR(p) - param));
-//    }
-//    return vector;
-//}
-
-//QVector<QPair<Point, bool> > Lemniscate::getNeighborSides(Point point){
-//    QVector<QPair<Point, bool> >  vector;
-//    for(int i = 0; i < 8; ++i) {
-//        Point p = point + getNeighbor(i);
-//        vector.push_back(QPair<Point, bool>(p, isPositiveSided(p)));
-//    }
-//    return vector;
-//}
-
-Point Lemniscate::getNeighbor(int i){
-    return neighbors[(i + 16) % 8];
-}
-
-Point Lemniscate::getNeighborReversed(int i){
-    return neighbors[(4096 - i) % 8];
-}
-
-QVector<QuarterTraits> Lemniscate::computeQuartersTraits(){
+QPair<QPair<Point, Point>, QPair<Point, Point> > Lemniscate::getStartingPointsPairs(){
     auto startingPoints = getStartingPoints();
-    auto firstNextPointPairs = computeSecondPoints(startingPoints.first, startingPoints.first, startingPoints.second);
-    auto secondNextPointPairs = computeSecondPoints(startingPoints.second, startingPoints.first, startingPoints.second);
-    QVector<QuarterTraits> traits;
-    traits.push_back(QuarterTraits(startingPoints.second, secondNextPointPairs.second.first, secondNextPointPairs.second.second));
-    traits.push_back(QuarterTraits(startingPoints.second, secondNextPointPairs.first.first, secondNextPointPairs.first.second));
-    traits.push_back(QuarterTraits(startingPoints.first, firstNextPointPairs.second.first, firstNextPointPairs.second.second));
-    traits.push_back(QuarterTraits(startingPoints.first, firstNextPointPairs.first.first, firstNextPointPairs.first.second));
-    return traits;
+    auto firstPair = findIntersectionFocusLinePoints(startingPoints.first);
+    auto secondPair = findIntersectionFocusLinePoints(startingPoints.second);
+    return QPair<QPair<Point, Point>, QPair<Point, Point> >(firstPair, secondPair);
 }
 
-QPair<QPair<Point, bool>, QPair<Point, bool>> Lemniscate::computeSecondPoints(Point startingPoint, Point firstPoint, Point secondPoint){
+QPair<Point, Point> Lemniscate::findIntersectionFocusLinePoints(Point startingPoint){
+    bool startingPointIsPositiveSided = isPositiveSided(startingPoint);
+    Point current = startingPoint;
+    while(true) {
+        auto pair = computeNextPoints(current);
+        if(isPositiveSided(pair.first) != startingPointIsPositiveSided){
+            return QPair<Point, Point>(pair.first, current);
+        }
+        if(isPositiveSided(pair.second) != startingPointIsPositiveSided){
+            return QPair<Point, Point>(pair.second, current);
+        }
+        current = abs(computeVectorFocusesMultiply(pair.first)) < abs(computeVectorFocusesMultiply(pair.second))
+                ? pair.first
+                : pair.second;
+    }
+}
+
+int Lemniscate::computeVectorFocusesMultiply(Point point){
+    return ((x1 - point.x) * (y2 - point.y) - (y1 - point.y) * (x2 - point.x));
+}
+
+bool Lemniscate::isPositiveSided(Point point){
+    return computeVectorFocusesMultiply(point) >= 0;
+}
+
+QPair<Point, Point> Lemniscate::computeNextPoints(Point startingPoint){
     Point first;
     Point second;
     bool firstFound = false;
@@ -325,37 +269,40 @@ QPair<QPair<Point, bool>, QPair<Point, bool>> Lemniscate::computeSecondPoints(Po
             }
         }
     }
-//    auto deb = getR(startingPoint) - param; // debug
-
-//    auto s = getNeighborParams(startingPoint); // debug
-
-//    auto pos = isPositiveSided(Point(-11, -123));
-//    auto sides = getNeighborSides(Point(-10, -123));
-
-    QPair<Point, bool> firstPair = isPositiveSided(first, firstPoint, secondPoint)
-            ? QPair<Point, bool>(first, true)
-            : QPair<Point, bool>(first, false);
-    QPair<Point, bool> secondPair = isPositiveSided(second, firstPoint, secondPoint)
-            ? QPair<Point, bool>(second, true)
-            : QPair<Point, bool>(second, false);
-    return QPair<QPair<Point, bool>, QPair<Point, bool>>(firstPair, secondPair);
+    return QPair<Point, Point>(first, second);
 }
 
-bool Lemniscate::isPositiveSided(Point point, Point firstPoint, Point secondPoint){
-//    return ((x1 - point.x) * (y2 - point.y) - (y1 - point.y) * (x2 - point.x)) > 0 ? true : false;
-    return ((firstPoint.x - point.x) * (secondPoint.y - point.y) - (firstPoint.y - point.y) * (secondPoint.x - point.x)) > 0;
+Point Lemniscate::getNextPoint(Point currentPoint, Point previousPoint, bool positive){
+    auto previousPointNeighborPosition = getNeighborPosition(currentPoint, previousPoint);
+    QVector<Point> candidates;
+    for (int i = 3; i < 6; ++i) {
+        Point point = currentPoint + getNeighbor(previousPointNeighborPosition + i);
+        if(centralPoints.contains(point)) {
+            return point;
+        }
+        if(isPositiveSided(point) != positive) {
+            throw NoAvailablePointsException();
+        }
+        candidates.append(point);
+    }
+    if(candidates.empty()) {
+        throw NoAvailablePointsException();
+    }
+    int position = std::min_element(candidates.begin(), candidates.end(), [&](Point p1, Point p2){
+        return abs(getR(p1) - param) < abs(getR(p2) - param);
+    }) - candidates.begin();
+    return candidates[position];
 }
 
-void Lemniscate::drawQuarter(QuarterTraits traits, QImage *image, Point firstPoint, Point secondPoint){
+void Lemniscate::drawQuarter(QuarterTraits traits, QImage *image){
     Point previousPoint = traits.firstPoint;
     Point currentPoint = traits.secondPoint;
     DrawingTools::drawPixel(image, previousPoint);
     DrawingTools::drawPixel(image, currentPoint);
-    qDebug() << "starting points R : " << getR(previousPoint) - param << getR(currentPoint) - param;
-    /*for(int i = 0; i < 300; ++i)*/while(true) {
+    while(true) {
         Point nextPoint;
         try{
-            nextPoint = getNextPoint(currentPoint, previousPoint, traits.isPositive, firstPoint, secondPoint);
+            nextPoint = getNextPoint(currentPoint, previousPoint, traits.isPositive);
         } catch (NoAvailablePointsException& e) {
             break;
         }
@@ -367,6 +314,10 @@ void Lemniscate::drawQuarter(QuarterTraits traits, QImage *image, Point firstPoi
         previousPoint = currentPoint;
         currentPoint = nextPoint;
     }
+}
+
+Point Lemniscate::getNeighbor(int i){
+    return neighbors[(i + 8) % 8];
 }
 
 int Lemniscate::getNeighborPosition(Point originPoint, Point neighborPoint){

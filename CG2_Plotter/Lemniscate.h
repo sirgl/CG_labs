@@ -38,7 +38,6 @@ class Lemniscate : public Drawable{
     void computeParam();
     void computeCentralPoints();
     Point getNeighbor(int i);
-    Point getNeighborReversed(int i);
 public:
     Lemniscate();
     void setFocuses(int x1, int y1, int x2, int y2);
@@ -53,7 +52,7 @@ public:
     QPair<Point, Point> getStartingPoints();
     Point getStartingPoint(Point nextPoint);
     QVector<QuarterTraits> computeQuartersTraits();
-    QPair<QPair<Point, bool>, QPair<Point, bool>> computeSecondPoints(Point startingPoint, Point firstPoint, Point secondPoint);
+    QPair<QPair<Point, bool>, QPair<Point, bool>> computeNextPoints(Point startingPoint, Point firstPoint, Point secondPoint);
     bool isPositiveSided(Point point, Point firstPoint, Point secondPoint);
     void drawQuarter(QuarterTraits traits, QImage* image, Point firstPoint, Point secondPoint);
     int getNeighborPosition(Point originPoint, Point neighborPoint);
@@ -65,11 +64,15 @@ public:
     long long getR(int x, int y);
     long long getR(Point p);
     Point getNextPoint(Point previousLemPoint);
-    Point getNextPointReversed(Point previousLemPoint);
 
-    //New  way
-//    int pickStartingPointPosition(Point currentPoint, bool positive);
-//    bool getQuarterSign(Point point);
+    //Correct way:
+    QPair<QPair<Point, Point>, QPair<Point, Point>> getStartingPointsPairs();
+    QPair<Point, Point> findIntersectionFocusLinePoints(Point startingPoint);
+    int computeVectorFocusesMultiply(Point p);
+    bool isPositiveSided(Point point);
+    QPair<Point, Point> computeNextPoints(Point startingPoint);
+    Point getNextPoint(Point currentPoint, Point previousPoint, bool positive);
+    void drawQuarter(QuarterTraits traits, QImage *image);
 
     int getX1() const;
     int getY1() const;

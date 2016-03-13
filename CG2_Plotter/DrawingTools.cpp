@@ -18,7 +18,7 @@ namespace DrawingTools {
 
         //DEBUG
 
-        qDebug() << "Drawing " << x << " " << y;
+//        qDebug() << "Drawing " << x << " " << y;
 
         //END
 
