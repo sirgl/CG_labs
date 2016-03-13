@@ -7,6 +7,7 @@
 #include <iostream>
 #include "Config.h"
 #include "Tools.h"
+#include "Axis.h"
 #include <QImage>
 
 CoreApplication::CoreApplication(){
@@ -24,6 +25,11 @@ int CoreApplication::exec(int argc, char **argv){
         Canvas canvas;
         canvas.setSize(config.panel->getXSize(), config.panel->getYSize());
         canvas.add(config.lemniscate);
+        Axis* xAxis = new Axis;
+        Axis* yAxis = new Axis;
+        yAxis->setMode(true);
+        canvas.add(xAxis);
+        canvas.add(yAxis);
         canvas.draw();
         QImage* image = canvas.getImage();
 
