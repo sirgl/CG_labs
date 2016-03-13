@@ -29,7 +29,7 @@ void Axis::draw(QImage *image){
 }
 
 void Axis::setMode(bool isHorizontal){
-    this->isHorisontal = true;
+    this->isHorisontal = isHorizontal;
     emit redraw();
 }
 

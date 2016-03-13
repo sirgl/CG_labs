@@ -23,7 +23,7 @@ int CoreApplication::exec(int argc, char **argv){
 
         Canvas canvas;
         canvas.setSize(config.panel->getXSize(), config.panel->getYSize());
-        canvas.add(config.circle);
+        canvas.add(config.lemniscate);
         canvas.draw();
         QImage* image = canvas.getImage();
 

@@ -18,6 +18,8 @@ public:
     void setX2Group(PickGroup* group);
     void setY2Group(PickGroup* group);
     void setLemniscate(Lemniscate* lem);
+    Lemniscate *getLemniscate() const;
+
 private slots:
     void x1Changed(int x1);
     void y1Changed(int y1);

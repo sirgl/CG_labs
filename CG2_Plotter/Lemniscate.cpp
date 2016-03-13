@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <DrawingTools.h>
 #include "Tools.h"
+#include "Circle.h"
 #include <algorithm>
 
 using Tools::sqr;

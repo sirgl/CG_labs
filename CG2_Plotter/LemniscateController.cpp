@@ -1,6 +1,11 @@
 #include "LemniscateController.h"
 #include <cassert>
 
+Lemniscate *LemniscateController::getLemniscate() const
+{
+    return lemniscate;
+}
+
 LemniscateController::LemniscateController(){
 
 }

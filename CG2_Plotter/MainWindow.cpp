@@ -74,7 +74,7 @@ void MainWindow::initLemniscateController(){
     canvasWidget->add(yAxis);
 
     Lemniscate* lem = new Lemniscate;
-    lem->setFocuses(0, 0, 0, 20); // bad
+    lem->setFocuses(0, 0, 0, 20);
     canvasWidget->add(lem);
 
     lemniscateController = new LemniscateController;
@@ -83,15 +83,6 @@ void MainWindow::initLemniscateController(){
     lemniscateController->setX2Group(x2Group);
     lemniscateController->setY2Group(y2Group);
     lemniscateController->setLemniscate(lem);
-
-//    canvasWidget->add(circle);
-
-//    circleController = new CircleController;
-//    circleController->setParent(this);
-//    circleController->setXGroup(xGroup);
-//    circleController->setYGroup(yGroup);
-//    circleController->setRGroup(rGroup);
-//    circleController->setCircle(circle);
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -116,10 +107,14 @@ void MainWindow::loadConfig() {
         auto json = Tools::loadJsonFromFile(path);
         Config config;
         config.loadFromJson(json);
-//        circleController->setCircle(config.circle);
-        //TODO
+        lemniscateController->setLemniscate(config.lemniscate);
         canvasWidget->removeAll();
-        canvasWidget->add(config.circle);
+        Axis* xAxis = new Axis;
+        Axis* yAxis = new Axis;
+        yAxis->setMode(true);
+        canvasWidget->add(xAxis);
+        canvasWidget->add(yAxis);
+        canvasWidget->add(config.lemniscate);
     }
     catch (ParserException e) {
         QMessageBox::critical(this, "Parsing error", e.what());
@@ -129,13 +124,12 @@ void MainWindow::loadConfig() {
 void MainWindow::saveConfig() {
     auto savePath = QFileDialog::getSaveFileName();
     auto panel = new Panel(canvasWidget->getCanvasWidth(), canvasWidget->getCanvasHeight());
-    //TODO
-//    Config config(circleController->getCircle(), panel);
-//    auto json = config.saveToJson();
-//    QFile file(savePath);
-//    file.open(QIODevice::WriteOnly);
-//    QTextStream stream;
-//    stream.setDevice(&file);
-//    stream << QString(QJsonDocument(json).toJson());
-//    file.close();
+    Config config(lemniscateController->getLemniscate(), panel);
+    auto json = config.saveToJson();
+    QFile file(savePath);
+    file.open(QIODevice::WriteOnly);
+    QTextStream stream;
+    stream.setDevice(&file);
+    stream << QString(QJsonDocument(json).toJson());
+    file.close();
 }

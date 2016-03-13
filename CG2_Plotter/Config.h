@@ -1,15 +1,15 @@
 ﻿#pragma once
 #include <QJsonObject>
-#include "Circle.h"
+#include "Lemniscate.h"
 #include "Panel.h"
 
 struct Config {
-    Circle* circle;
+    Lemniscate* lemniscate;
     Panel* panel;
 
     Config();
 
-    Config(Circle* circle, Panel* panel);
+    Config(Lemniscate* lemniscate, Panel* panel);
 
     void loadFromJson(QJsonObject object);
 
