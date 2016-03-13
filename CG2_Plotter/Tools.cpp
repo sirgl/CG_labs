@@ -17,3 +17,7 @@ QJsonObject Tools::loadJsonFromFile(QString path){
     }
     return document.object();
 }
+
+long long Tools::sqr(long long number){
+    return number * number;
+}

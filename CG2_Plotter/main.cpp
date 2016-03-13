@@ -18,6 +18,7 @@ int main(int argc, char *argv[]){
         CoreApplication core;
         return core.exec(argc, argv);
     }
+
     qWarning() << USAGE;
     return EXIT_FAILURE;
 }

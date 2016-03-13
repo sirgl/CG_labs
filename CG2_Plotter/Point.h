@@ -22,6 +22,10 @@ struct Point{
         return *this;
     }
 
+    bool operator==(const Point& point) const {
+        return point.x == x && point.y == y;
+    }
+
     Point operator+(const Point& point){
         return Point(x + point.x, y + point.y);
     }

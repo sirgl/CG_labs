@@ -26,10 +26,10 @@ class MainWindow : public QMainWindow
 
     CanvasWidget* canvasWidget;
 
-    static const int MIN_X_CONTROLS = -10000;
-    static const int MIN_Y_CONTROLS = -10000;
-    static const int MAX_X_CONTROLS = 10000;
-    static const int MAX_Y_CONTROLS = 10000;
+    static const int MIN_X_CONTROLS = -100;
+    static const int MIN_Y_CONTROLS = -100;
+    static const int MAX_X_CONTROLS = 100;
+    static const int MAX_Y_CONTROLS = 100;
 
 
     void initMenu();

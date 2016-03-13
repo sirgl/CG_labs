@@ -4,8 +4,6 @@
 #include <QDebug>
 
 namespace DrawingTools {
-    QSet<QPair<int, int>> uniquePoints;
-
     void drawPixel(QImage *image, int x, int y, QColor* color){
         if(!image) {
             return;
@@ -20,7 +18,6 @@ namespace DrawingTools {
 
         //DEBUG
 
-        uniquePoints.insert(QPair<int, int>(x, y));
         qDebug() << "Drawing " << x << " " << y;
 
         //END
@@ -39,11 +36,6 @@ namespace DrawingTools {
     void drawPixel(QImage* image, Point point) {
         drawPixel(image, point, new QColor(0, 0, 0));
     }
-
-    int getUnique()    {
-        return uniquePoints.size();
-    }
-
 
 
 }

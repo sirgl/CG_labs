@@ -9,5 +9,4 @@ namespace DrawingTools {
     void drawPixel(QImage* image, Point point, QColor* color);
     void drawPixel(QImage* image, Point point);
 
-    int getUnique();
 }
