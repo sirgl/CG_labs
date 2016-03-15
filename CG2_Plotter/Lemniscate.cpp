@@ -193,7 +193,7 @@ Point Lemniscate::getStartingPoint(Point nextPoint){
     while(abs(currentX - nextX) > 1 || abs(currentY - nextY) > 1) {
         int tmpX = (currentX + nextX) >> 1;
         int tmpY = (currentY + nextY) >> 1;
-        long rTmp = getR(tmpX, tmpY);
+        long long rTmp = getR(tmpX, tmpY);
         if(rTmp > param) {
             nextX = (currentX + nextX) >> 1;
             nextY = (currentY + nextY) >> 1;
@@ -242,8 +242,8 @@ QPair<Point, Point> Lemniscate::findIntersectionFocusLinePoints(Point startingPo
     }
 }
 
-long Lemniscate::computeVectorFocusesMultiply(Point point){
-    return (((long)x1 - (long)point.x) * ((long)y2 - (long)point.y) - ((long)y1 - (long)point.y) * ((long)x2 - (long)point.x));
+long long Lemniscate::computeVectorFocusesMultiply(Point point){
+    return (((long long)x1 - (long long)point.x) * ((long long)y2 - (long long)point.y) - ((long long)y1 - (long long)point.y) * ((long long)x2 - (long long)point.x));
 }
 
 bool Lemniscate::isPositiveSided(Point point){
