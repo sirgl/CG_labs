@@ -46,7 +46,7 @@ class Lemniscate : public Drawable{
     int getNeighborPosition(Point originPoint, Point neighborPoint);
     QPair<QPair<Point, Point>, QPair<Point, Point>> getStartingPointsPairs();
     QPair<Point, Point> findIntersectionFocusLinePoints(Point startingPoint);
-    int computeVectorFocusesMultiply(Point p);
+    long computeVectorFocusesMultiply(Point p); // todo long long
     bool isPositiveSided(Point point);
     QPair<Point, Point> computeNextPoints(Point startingPoint);
     Point getNextPoint(Point currentPoint, Point previousPoint, bool positive);

@@ -155,13 +155,14 @@ QJsonObject Lemniscate::saveToJson(){
 }
 
 void Lemniscate::draw(QImage *image){
-    if(abs(x1 - x2) + abs(y1 - y2) >4) {
-        auto x = getStartingPointsPairs();
+    if(abs(x1 - x2) + abs(y1 - y2) > 4) {
+        auto pairs = getStartingPointsPairs();
+        qDebug() << "Starting points calculated";
         QVector<QuarterTraits> traits;
-        traits.push_back(QuarterTraits(x.first.first, x.first.second, isPositiveSided(x.first.second)));
-        traits.push_back(QuarterTraits(x.first.second, x.first.first, isPositiveSided(x.first.first)));
-        traits.push_back(QuarterTraits(x.second.first, x.second.second, isPositiveSided(x.second.second)));
-        traits.push_back(QuarterTraits(x.second.second, x.second.first, isPositiveSided(x.second.first)));
+        traits.push_back(QuarterTraits(pairs.first.first, pairs.first.second, isPositiveSided(pairs.first.second)));
+        traits.push_back(QuarterTraits(pairs.first.second, pairs.first.first, isPositiveSided(pairs.first.first)));
+        traits.push_back(QuarterTraits(pairs.second.first, pairs.second.second, isPositiveSided(pairs.second.second)));
+        traits.push_back(QuarterTraits(pairs.second.second, pairs.second.first, isPositiveSided(pairs.second.first)));
         for(auto trait : traits) {
             drawQuarter(trait, image);
         }
@@ -241,12 +242,12 @@ QPair<Point, Point> Lemniscate::findIntersectionFocusLinePoints(Point startingPo
     }
 }
 
-int Lemniscate::computeVectorFocusesMultiply(Point point){
-    return ((x1 - point.x) * (y2 - point.y) - (y1 - point.y) * (x2 - point.x));
+long Lemniscate::computeVectorFocusesMultiply(Point point){
+    return (((long)x1 - (long)point.x) * ((long)y2 - (long)point.y) - ((long)y1 - (long)point.y) * ((long)x2 - (long)point.x));
 }
 
 bool Lemniscate::isPositiveSided(Point point){
-    return computeVectorFocusesMultiply(point) >= 0;
+    return computeVectorFocusesMultiply(point) >= 0l;
 }
 
 QPair<Point, Point> Lemniscate::computeNextPoints(Point startingPoint){
@@ -260,16 +261,18 @@ QPair<Point, Point> Lemniscate::computeNextPoints(Point startingPoint){
         nextPoint = startingPoint + getNeighbor(i);
         auto currentRDelta = getR(currentPoint) - param;
         auto nextRDelta = getR(nextPoint) - param;
-        if(currentRDelta * nextRDelta <= 0) {
+        auto mul = currentRDelta * nextRDelta;
+        if((currentRDelta <= 0 && nextRDelta >= 0) || (nextRDelta <= 0 && currentRDelta >= 0)) {
             if(firstFound) {
-                second = abs(currentRDelta) < abs(nextRDelta) ? currentPoint : nextPoint;
+                second = llabs(currentRDelta) < llabs(nextRDelta) ? currentPoint : nextPoint;
                 break;
             } else {
-                first = abs(currentRDelta) < abs(nextRDelta) ? currentPoint : nextPoint;
+                first = llabs(currentRDelta) < llabs(nextRDelta) ? currentPoint : nextPoint;
                 firstFound = true;
             }
         }
     }
+
     return QPair<Point, Point>(first, second);
 }
 
@@ -290,7 +293,7 @@ Point Lemniscate::getNextPoint(Point currentPoint, Point previousPoint, bool pos
         throw NoAvailablePointsException();
     }
     int position = std::min_element(candidates.begin(), candidates.end(), [&](Point p1, Point p2){
-        return abs(getR(p1) - param) < abs(getR(p2) - param);
+        return llabs(getR(p1) - param) < llabs(getR(p2) - param);
     }) - candidates.begin();
     return candidates[position];
 }

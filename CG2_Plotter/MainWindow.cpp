@@ -74,7 +74,7 @@ void MainWindow::initLemniscateController(){
     canvasWidget->add(yAxis);
 
     Lemniscate* lem = new Lemniscate;
-    lem->setFocuses(0, 0, 0, 20);
+    lem->setFocuses(575, 0, 0, 0);
     canvasWidget->add(lem);
 
     lemniscateController = new LemniscateController;
