@@ -261,7 +261,6 @@ QPair<Point, Point> Lemniscate::computeNextPoints(Point startingPoint){
         nextPoint = startingPoint + getNeighbor(i);
         auto currentRDelta = getR(currentPoint) - param;
         auto nextRDelta = getR(nextPoint) - param;
-        auto mul = currentRDelta * nextRDelta;
         if((currentRDelta <= 0 && nextRDelta >= 0) || (nextRDelta <= 0 && currentRDelta >= 0)) {
             if(firstFound) {
                 second = llabs(currentRDelta) < llabs(nextRDelta) ? currentPoint : nextPoint;
@@ -312,9 +311,9 @@ void Lemniscate::drawQuarter(QuarterTraits traits, QImage *image){
         }
 
         DrawingTools::drawPixel(image, nextPoint);
-        if(centralPoints.contains(nextPoint)) {
-            break;
-        }
+//        if(centralPoints.contains(nextPoint)) {
+//            break;
+//        }
         previousPoint = currentPoint;
         currentPoint = nextPoint;
     }
