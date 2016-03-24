@@ -10,6 +10,7 @@
 #include "Config.h"
 #include "Axis.h"
 #include "BezierCurve.h"
+#include "Line.h"
 
 void MainWindow::initMenu(){
     auto fileMenu = menuBar()->addMenu("File");
@@ -24,29 +25,23 @@ void MainWindow::initControlsBox(){
     QVBoxLayout* controlsLayout = new QVBoxLayout();
     controlsBox->setLayout(controlsLayout);
     controlsBox->setFixedWidth(200);
-    x1Group = new PickGroup;
-    x1Group->setLabel("X 1");
-    x1Group->setMin(MIN_X_CONTROLS);
-    x1Group->setMax(MAX_X_CONTROLS);
-    controlsLayout->addWidget(x1Group);
+    xGroup = new PickGroup;
+    xGroup->setLabel("X offset");
+    xGroup->setMin(MIN_X_CONTROLS);
+    xGroup->setMax(MAX_X_CONTROLS);
+    controlsLayout->addWidget(xGroup);
 
-    y1Group = new PickGroup;
-    y1Group->setLabel("Y 1");
-    y1Group->setMin(MIN_Y_CONTROLS);
-    y1Group->setMax(MAX_Y_CONTROLS);
-    controlsLayout->addWidget(y1Group);
+    yGroup = new PickGroup;
+    yGroup->setLabel("Y offset");
+    yGroup->setMin(MIN_Y_CONTROLS);
+    yGroup->setMax(MAX_Y_CONTROLS);
+    controlsLayout->addWidget(yGroup);
 
-    x2Group = new PickGroup;
-    x2Group->setLabel("X 2");
-    x2Group->setMin(MIN_X_CONTROLS);
-    x2Group->setMax(MAX_X_CONTROLS);
-    controlsLayout->addWidget(x2Group);
-
-    y2Group = new PickGroup;
-    y2Group->setLabel("Y 2");
-    y2Group->setMin(MIN_X_CONTROLS);
-    y2Group->setMax(MAX_X_CONTROLS);
-    controlsLayout->addWidget(y2Group);
+    scaleGroup = new PickGroup;
+    scaleGroup->setLabel("Scale");
+    scaleGroup->setMin(MIN_SCALE_CONTROLS);
+    scaleGroup->setMax(MAX_SCALE_CONTROLS);
+    controlsLayout->addWidget(scaleGroup);
 
     mainLayout->addWidget(controlsBox);
 }
@@ -70,12 +65,34 @@ void MainWindow::initLemniscateController(){
     canvasWidget->add(xAxis);
     canvasWidget->add(yAxis);
 
+
+
     BezierCurve* curve = new BezierCurve;
+
+    QVector<BezierPoint> points;
+    BezierPoint pointsArr[] = {
+        BezierPoint(-100, 20, true),
+        BezierPoint(0, -200.5, false),
+        BezierPoint(200, 30, true),
+        BezierPoint(20, 70, true)
+    };
+    points.push_back(pointsArr[0]);
+    points.push_back(pointsArr[1]);
+    points.push_back(pointsArr[2]);
+    points.push_back(pointsArr[3]);
+    curve->setPoints(points);
+    curve->setOutline(true);
+//    curve->setScale(1);
+    curve->setXOffset(50);
+    curve->setXOffset(-50);
     canvasWidget->add(curve);
 
-//    Lemniscate* lem = new Lemniscate;
-//    lem->setFocuses(575, 0, 0, 0);
-//    canvasWidget->add(lem);
+
+    controller = new CurveController;
+    controller->setXGroup(xGroup);
+    controller->setYGroup(yGroup);
+    controller->setScaleGroup(scaleGroup);
+    controller->setCurve(curve);
 
 //    lemniscateController = new LemniscateController;
 //    lemniscateController->setX1Group(x1Group);

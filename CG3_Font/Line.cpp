@@ -35,15 +35,23 @@ void Line::draw(QImage *image){
     }
 
     const double dx = x2 - x1;
-    const double dy = fabs(y2 - y1);
+    const double dy = std::abs(std::round(y2) - std::round(y1)); // changed, was (y2 - y1) without rounding
 
-    double error = dx / 2.0f;
+    double error = dx / 2.0;
     const int ystep = (y1 < y2) ? 1 : -1;
     int y = std::round(y1);
 
-    const int maxX = (int)x2;
+    if(steep) { // added
+        DrawingTools::drawPixel(image, Point(std::round(y1), std::round(x1)));
+        DrawingTools::drawPixel(image, Point(std::round(y2), std::round(x2)));
+    } else {
+        DrawingTools::drawPixel(image, Point(std::round(x1), std::round(y1)));
+        DrawingTools::drawPixel(image, Point(std::round(x2), std::round(y2)));
+    }
 
-    for(int x = std::round(x1); x<=maxX; x++) {
+    const int maxX = std::round(x2);
+
+    for(int x = std::round(x1); x <= maxX; x++) { // changed, was <
         if(steep) {
             DrawingTools::drawPixel(image, Point(y, x));
         }

@@ -15,6 +15,7 @@ struct BezierPoint{
     BezierPoint operator +(const BezierPoint& point);
     BezierPoint operator -(const BezierPoint& point);
     BezierPoint operator *(double multiplier);
+    bool operator == (const BezierPoint& point);
 };
 
 BezierPoint operator *(double multiplier, const BezierPoint& point);

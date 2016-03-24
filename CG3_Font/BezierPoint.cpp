@@ -5,6 +5,8 @@
 
 using Tools::sqr;
 
+const double DELTA = 0.0004;
+
 BezierPoint::BezierPoint() : BezierPoint(0, 0, false) {
 
 }
@@ -40,6 +42,10 @@ BezierPoint BezierPoint::operator -(const BezierPoint &point){
 
 BezierPoint BezierPoint::operator *(double multiplier){
     return BezierPoint(x * multiplier, y * multiplier, false);
+}
+
+bool BezierPoint::operator ==(const BezierPoint &point){
+    return onCurve == point.onCurve && x - point.x < DELTA && y - point.y < DELTA;
 }
 
 BezierPoint operator *(double multiplier, const BezierPoint &point){

@@ -8,29 +8,31 @@
 #include "PickGroup.h"
 #include "CircleController.h"
 #include "CanvasWidget.h"
-#include "LemniscateController.h"
+#include "CurveController.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    PickGroup* x1Group;
-    PickGroup* y1Group;
-    PickGroup* x2Group;
-    PickGroup* y2Group;
+    PickGroup* xGroup;
+    PickGroup* yGroup;
+    PickGroup* scaleGroup;
 
     QHBoxLayout* mainLayout;
 
 //    CircleController* circleController;
-    LemniscateController* lemniscateController;
+    CurveController* controller;
 
     CanvasWidget* canvasWidget;
 
-    static const int MIN_X_CONTROLS = -10000;
-    static const int MIN_Y_CONTROLS = -10000;
-    static const int MAX_X_CONTROLS = 10000;
-    static const int MAX_Y_CONTROLS = 10000;
+    static const int MIN_X_CONTROLS = -1000;
+    static const int MAX_X_CONTROLS = 1000;
 
+    static const int MIN_Y_CONTROLS = -1000;
+    static const int MAX_Y_CONTROLS = 1000;
+
+    static const int MIN_SCALE_CONTROLS = -1000;
+    static const int MAX_SCALE_CONTROLS = 1000;
 
     void initMenu();
     void initControlsBox();

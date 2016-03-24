@@ -18,7 +18,7 @@ void Axis::draw(QImage *image){
         }
     } else {
         int x = width / 2;
-        qDebug() << x << " when width is " << width;
+//        qDebug() << x << " when width is " << width;
         for(int y = 0; y < height; ++y) {
             unsigned char* point = image->bits() + y * image->bytesPerLine() + x * 3;
             *point++ = 0;

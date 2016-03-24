@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = CG3_Font
 TEMPLATE = app
 
-CONFIG += c++11 console
+CONFIG += c++11
 
 SOURCES += main.cpp\
         MainWindow.cpp \
@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     DrawingTools.cpp \
     BezierPoint.cpp \
     BezierCurve.cpp \
-    Line.cpp
+    Line.cpp \
+    CurveController.cpp
 
 HEADERS  += MainWindow.h \
     Circle.h \
@@ -48,6 +49,7 @@ HEADERS  += MainWindow.h \
     DrawingTools.h \
     BezierPoint.h \
     BezierCurve.h \
-    Line.h
+    Line.h \
+    CurveController.h
 
 FORMS    +=

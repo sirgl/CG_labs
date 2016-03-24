@@ -4,6 +4,7 @@
 #include "Circle.h"
 
 using Tools::sqr;
+static const double DELTA = 0.5;
 
 QVector<BezierPoint> BezierCurve::getPoints() const{
     return points;
@@ -29,39 +30,82 @@ void BezierCurve::setOutline(bool value){
     outline = value;
 }
 
-BezierCurve::BezierCurve(){
+BezierPoint BezierCurve::scaleAndShiftPoint(BezierPoint point){
+    point.x += xOffset;
+    point.y += yOffset;
+    double scaleK = scale <= 0 ? 1 + (scale / 1000) :  1 + (scale / 100);
+    return point * scaleK;
+}
 
+int BezierCurve::getXOffset() const{
+    return xOffset;
+}
+
+void BezierCurve::setXOffset(int value){
+    xOffset = value;
+    emit redraw();
+    emit xOffsetChanged(value);
+}
+
+int BezierCurve::getYOffset() const{
+    return yOffset;
+}
+
+void BezierCurve::setYOffset(int value){
+    yOffset = value;
+    emit redraw();
+    emit yOffsetChanged(value);
+}
+
+double BezierCurve::getScale() const{
+    return scale;
+}
+
+void BezierCurve::setScale(int value){
+    scale = value;
+    emit redraw();
+    emit scaleChanged(value);
+}
+
+BezierCurve::BezierCurve() : scale(0), fill(true), outline(true), xOffset(0), yOffset(0) {
 }
 
 void BezierCurve::draw(QImage *image){
     if(outline) {
         drawOutline(image);
     }
-    drawCurve(image, BezierPoint(10,10, true), BezierPoint(10, 400, false), BezierPoint(200, 200, true));
-    //TODO fill
 }
 
 void BezierCurve::drawOutline(QImage *image){
-
+    for(int i = 0;; ++i) {
+        if(getPoint(i + 1).onCurve) {
+            Line line;
+            line.setCoordinates(scaleAndShiftPoint(getPoint(i)), scaleAndShiftPoint(getPoint(i + 1)));
+            line.draw(image);
+            continue;
+        }
+        drawCurve(image, getPoint(i), getPoint(i + 1), getPoint(i + 2));
+        i += 1;
+        if(i >= points.size()) {
+            break;
+        }
+    }
 }
 
 void BezierCurve::drawCurve(QImage *image, BezierPoint p0, BezierPoint p1, BezierPoint p2){
     BezierPoint middle = getMiddlePoint(p0, p1, p2);
 
-//    Circle circle1;
-//    circle1.setPosition(p0.x, -p0.y);
-//    circle1.setRadius(1);
-//    circle1.draw(image);
-//    Circle circle2;
-//    circle2.setPosition(p2.x, -p2.y);
-//    circle2.setRadius(1);
-//    circle2.draw(image);
+
 
 
     if(computeDistanceToLine(p0, p2, middle) * p0.distance(p2) < DELTA) {
         Line line1;
 //        line1.setCoordinates(p0, middle);
-        line1.setCoordinates(p0, p2);
+//        p0.x += xOffset;
+//        p0.y += yOffset;
+//        p2.x += xOffset;
+//        p2.y += yOffset;
+        line1.setCoordinates(scaleAndShiftPoint(p0), scaleAndShiftPoint(p2));
         line1.draw(image);
 //        Line line2;
 //        line2.setCoordinates(p2, middle);
@@ -72,6 +116,15 @@ void BezierCurve::drawCurve(QImage *image, BezierPoint p0, BezierPoint p1, Bezie
         drawCurve(image, p0, p3, middle);
         drawCurve(image, middle, p4, p2);
     }
+
+//    Circle circle1;
+//    circle1.setPosition(std::round(p0.x), std::round(-p0.y));
+//    circle1.setRadius(1);
+//    circle1.draw(image);
+//    Circle circle2;
+//    circle2.setPosition(std::round(p2.x), std::round(-p2.y));
+//    circle2.setRadius(1);
+//    circle2.draw(image);
 }
 
 BezierPoint BezierCurve::getMiddlePoint(BezierPoint p0, BezierPoint p1, BezierPoint p2){
@@ -85,4 +138,8 @@ double BezierCurve::computeDistanceToLine(BezierPoint p1, BezierPoint p2, Bezier
     double numerator = std::abs(v1 - v2 + v3);
     double denominator = std::sqrt(sqr(p2.y - p1.y) + sqr(p2.x - p1.x));
     return numerator / denominator;
+}
+
+BezierPoint BezierCurve::getPoint(int index){
+    return points[index % points.size()];
 }
