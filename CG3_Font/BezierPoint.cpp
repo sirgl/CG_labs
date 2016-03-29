@@ -33,19 +33,23 @@ double BezierPoint::distance(BezierPoint point){
 }
 
 BezierPoint BezierPoint::operator +(const BezierPoint &point){
-    return BezierPoint(point.x + x, point.y + y, false);
+    return BezierPoint(point.x + x, point.y + y, onCurve);
 }
 
 BezierPoint BezierPoint::operator -(const BezierPoint &point){
-    return BezierPoint(x - point.x, y - point.y, false);
+    return BezierPoint(x - point.x, y - point.y, onCurve);
 }
 
 BezierPoint BezierPoint::operator *(double multiplier){
-    return BezierPoint(x * multiplier, y * multiplier, false);
+    return BezierPoint(x * multiplier, y * multiplier, onCurve);
 }
 
 bool BezierPoint::operator ==(const BezierPoint &point){
     return onCurve == point.onCurve && x - point.x < DELTA && y - point.y < DELTA;
+}
+
+BezierPoint::operator Point(){
+    return Point(std::round(x), std::round(y));
 }
 
 BezierPoint operator *(double multiplier, const BezierPoint &point){

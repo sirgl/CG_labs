@@ -5,15 +5,29 @@
 #include "Drawable.h"
 #include "BezierPoint.h"
 #include <QObject>
+#include "Point.h"
+
 
 class BezierCurve : public Drawable{
     Q_OBJECT
-    QVector<BezierPoint> points;
+
     bool fill;
     bool outline;
     int xOffset;
     int yOffset;
     double scale;
+
+    double minY;
+    double maxY;
+
+    QVector<BezierPoint> originPoints;
+
+    QVector<QVector<BezierPoint>> primitiveSegments;
+    QVector<QVector<BezierPoint>> separateToPrimitiveSegments(QVector<BezierPoint> points);
+    QVector<BezierPoint> intersectBezierSegmentWithHorizontalLine(QVector<BezierPoint> bezier, double y);
+    QVector<BezierPoint> intersectLineWithHorizontalLine(QVector<BezierPoint> line, double y);
+    static BezierPoint getBezierPointByParameter(BezierPoint p0, BezierPoint p1, BezierPoint p2, double t);
+    QVector<QPair<BezierPoint, BezierPoint>> getFillingArea();
 public:
     BezierCurve();
     void draw(QImage* image) override;
@@ -21,7 +35,7 @@ public:
     void drawCurve(QImage* image, BezierPoint p0, BezierPoint p1, BezierPoint p2);
     BezierPoint getMiddlePoint(BezierPoint p0, BezierPoint p1, BezierPoint p2);
     double computeDistanceToLine(BezierPoint linePoint1, BezierPoint linePoint2, BezierPoint target);
-    BezierPoint getPoint(int index);
+    BezierPoint getPoint(int index, QVector<BezierPoint> points);
 
     QVector<BezierPoint> getPoints() const;
     void setPoints(const QVector<BezierPoint> &value);

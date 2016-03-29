@@ -1,5 +1,7 @@
 #ifndef BEZIERPOINT_H
-#define BEZIERPOINT_H
+#define BEZIERPOINT_H\
+
+#include "Point.h"
 
 struct BezierPoint{
     double x;
@@ -16,6 +18,8 @@ struct BezierPoint{
     BezierPoint operator -(const BezierPoint& point);
     BezierPoint operator *(double multiplier);
     bool operator == (const BezierPoint& point);
+
+    operator Point();
 };
 
 BezierPoint operator *(double multiplier, const BezierPoint& point);
