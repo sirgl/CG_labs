@@ -6,6 +6,7 @@
 #include "BezierPoint.h"
 #include <QObject>
 #include "Point.h"
+#include <QJsonObject>
 
 
 class BezierCurve : public Drawable{
@@ -19,15 +20,18 @@ class BezierCurve : public Drawable{
 
     double minY;
     double maxY;
+    int maxX;
+    int minX;
 
-    QVector<BezierPoint> originPoints;
+    QVector<QVector<BezierPoint>> originPointsSet;
+    QVector<QVector<QVector<BezierPoint>>> primitiveCurvesSegments;
 
-    QVector<QVector<BezierPoint>> primitiveSegments;
     QVector<QVector<BezierPoint>> separateToPrimitiveSegments(QVector<BezierPoint> points);
     QVector<BezierPoint> intersectBezierSegmentWithHorizontalLine(QVector<BezierPoint> bezier, double y);
     QVector<BezierPoint> intersectLineWithHorizontalLine(QVector<BezierPoint> line, double y);
     static BezierPoint getBezierPointByParameter(BezierPoint p0, BezierPoint p1, BezierPoint p2, double t);
     QVector<QPair<BezierPoint, BezierPoint>> getFillingArea();
+    void extractPrimitiveCurveSegments(QImage* image);
 public:
     BezierCurve();
     void draw(QImage* image) override;
@@ -39,6 +43,7 @@ public:
 
     QVector<BezierPoint> getPoints() const;
     void setPoints(const QVector<BezierPoint> &value);
+    void setPointsSets(QVector<QVector<BezierPoint>> value);
     bool getFill() const;
     void setFill(bool value);
     bool getOutline() const;
@@ -55,6 +60,10 @@ public:
     double getScale() const;
     void setScale(int value);
 
+    void setOriginPointsSet(const QVector<QVector<BezierPoint> > &value);
+
+    QJsonObject saveToJson();
+    void loadFromJson(QJsonObject object);
 signals:
     void xOffsetChanged(int xOffset);
     void yOffsetChanged(int xOffset);

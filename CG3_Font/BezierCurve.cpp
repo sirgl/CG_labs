@@ -4,18 +4,16 @@
 #include "Circle.h"
 #include "DrawingTools.h"
 #include <QDebug>
-#include <set>
+#include <QJsonArray>
+#include <ParserException.h>
 
 using Tools::sqr;
-static const double DELTA = 0.1;
+static const double MIN_DISTANCE_TRESHOLD = 0.5;
 
-QVector<BezierPoint> BezierCurve::getPoints() const{
-    return originPoints;
+void BezierCurve::setPointsSets(QVector<QVector<BezierPoint> > value){
+    originPointsSet = value;
 }
 
-void BezierCurve::setPoints(const QVector<BezierPoint> &value){
-    originPoints = value;
-}
 
 bool BezierCurve::getFill() const{
     return fill;
@@ -23,6 +21,7 @@ bool BezierCurve::getFill() const{
 
 void BezierCurve::setFill(bool value){
     fill = value;
+    emit redraw();
 }
 
 bool BezierCurve::getOutline() const{
@@ -31,6 +30,7 @@ bool BezierCurve::getOutline() const{
 
 void BezierCurve::setOutline(bool value){
     outline = value;
+    emit redraw();
 }
 
 BezierPoint BezierCurve::scaleAndShiftPoint(BezierPoint point){
@@ -70,12 +70,116 @@ void BezierCurve::setScale(int value){
     emit scaleChanged(value);
 }
 
+void BezierCurve::setOriginPointsSet(const QVector<QVector<BezierPoint> > &value){
+    originPointsSet = value;
+}
+
+QJsonObject BezierCurve::saveToJson(){
+    QJsonObject object;
+    QJsonObject position;
+    position["x"] = xOffset;
+    position["y"] = yOffset;
+    object["position"] = position;
+    object["scale"] = scale;
+    object["fill"] = fill;
+    object["outline"] = outline;
+    QJsonArray glyphs;
+    for(int i = 0; i < originPointsSet.size(); ++i) {
+        QJsonArray curve;
+        for (BezierPoint point : originPointsSet[i]) {
+            curve.push_back(point.saveToJson());
+        }
+        QJsonObject figure;
+        figure[QString("figure") + i] = curve;
+        glyphs.push_back(figure);
+    }
+    object["glyphs"] = glyphs;
+    return object;
+}
+
+void BezierCurve::loadFromJson(QJsonObject object){
+    auto positionRef = object["position"];
+    if(!positionRef.isObject()) {
+        throw ParserException("Bad json format");
+    }
+    auto positionObj = positionRef.toObject();
+
+    auto xRef = positionObj["x"];
+    if(!xRef.isDouble()) {
+        throw ParserException("Bad json format");
+    }
+    auto xObj = xRef.toInt();
+
+    auto yRef = positionObj["y"];
+    if(!yRef.isDouble()) {
+        throw ParserException("Bad json format");
+    }
+    auto yObj = yRef.toInt();
+
+    auto scaleRef = object["scale"];
+    if(!scaleRef.isDouble()) {
+        throw ParserException("Bad json format");
+    }
+    auto scaleObj = scaleRef.toDouble();
+
+
+    auto fillRef = object["fill"];
+    if(!fillRef.isBool()) {
+        throw ParserException("Bad json format");
+    }
+    auto fillObj = fillRef.toBool();
+
+    auto outlineRef = object["outline"];
+    if(!outlineRef.isBool()) {
+        throw ParserException("Bad json format");
+    }
+    auto outlineObj = outlineRef.toBool();
+
+    auto glyphsRef = object["glyphs"];
+    if(!glyphsRef.isArray()) {
+        throw ParserException("Bad json format");
+    }
+    auto glyphsObj = glyphsRef.toArray();
+    QVector<QVector<BezierPoint>> curveArr;
+    for(auto figure : glyphsObj) {
+        if(!figure.isObject()) {
+            throw ParserException("Bad json format");
+        }
+        auto figureObj = figure.toObject();
+        for(auto figurePointArrRef : figureObj) {
+            if(!figurePointArrRef.isArray()) {
+                throw ParserException("Bad json format");
+            }
+            auto figurePointArr = figurePointArrRef.toArray();
+            QVector<BezierPoint> curve;
+            for(auto pointRef : figurePointArr) {
+                if(!pointRef.isObject()) {
+                    throw ParserException("Bad json format");
+                }
+                auto point = pointRef.toObject();
+                BezierPoint bezierPoint;
+                bezierPoint.loadFromJson(point);
+                curve.push_back(bezierPoint);
+            }
+            curveArr.push_back(curve);
+        }
+    }
+
+    this->xOffset = xObj;
+    this->yOffset = yObj;
+    this->scale = scaleObj;
+    this->fill = fillObj;
+    this->outline = outlineObj;
+    this->originPointsSet = curveArr;
+}
+
 QVector<QVector<BezierPoint> > BezierCurve::separateToPrimitiveSegments(QVector<BezierPoint> points){
     QVector<QVector<BezierPoint> > segments;
     for(int i = 0;; ++i) {
-        if(i >= originPoints.size()) {
+        if(i >= points.size()) {
             break;
         }
+
         if(getPoint(i + 1, points).onCurve) {
             QVector<BezierPoint> line;
             line.push_back(getPoint(i, points));
@@ -107,10 +211,20 @@ QVector<BezierPoint> BezierCurve::intersectBezierSegmentWithHorizontalLine(QVect
     double t2 = (2 * (y0 - y1) - sqrtDiscriminant) / (2 * (y0 - 2 * y1 + y2));
     QVector<BezierPoint> intersectionPoints;
     if(t1 >= 0 && t1 <= 1) {
-        intersectionPoints.push_back(getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t1));
+        auto point = getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t1);
+        auto x0Delta = std::abs(bezier[0].x - point.x);
+        auto y0Delta = std::abs(bezier[0].y - point.y);
+        if (!(x0Delta < 0.04 && y0Delta < 0.04)) {
+            intersectionPoints.push_back(point);
+        }
     }
     if(t2 >= 0 && t2 <= 1) {
-        intersectionPoints.push_back(getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t2));
+        auto point = getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t2);
+        auto x0Delta = std::abs(bezier[0].x - point.x);
+        auto y0Delta = std::abs(bezier[0].y - point.y);
+        if (!(x0Delta < 0.04 && y0Delta < 0.04)) {
+            intersectionPoints.push_back(point);
+        }
     }
     if(2 == intersectionPoints.size() && intersectionPoints[0] == intersectionPoints[1]) {
         intersectionPoints.pop_back();
@@ -126,9 +240,11 @@ QVector<BezierPoint> BezierCurve::intersectLineWithHorizontalLine(QVector<Bezier
     }
     QVector<BezierPoint> result;
     double t = (y - y0) / (y1 - y0);
-    if(t >= 0 && t <= 1) {
+    if(t >= -0 && t <= 1) {
         double x = line[0].x + (line[1].x - line[0].x) * t;
-        result.push_back(BezierPoint(x, y, false));
+        if(!(std::abs(line[0].x - std::round(x)) < 0.04 && std::abs(line[0].y - std::round(y) < 0.04))) {
+            result.push_back(BezierPoint(x, y, false));
+        }
     }
     return result;
 }
@@ -139,24 +255,23 @@ BezierPoint BezierCurve::getBezierPointByParameter(BezierPoint p0, BezierPoint p
 
 QVector<QPair<BezierPoint, BezierPoint> > BezierCurve::getFillingArea(){
     QVector<QPair<BezierPoint, BezierPoint> > fillingLines;
-
-    ///TODO fit to size of monitor
     for(int y = std::round(minY); y < std::round(maxY); ++y){
         QVector<BezierPoint> intersections;
-//        y = 20;
-        for(auto segment : primitiveSegments) {
-            if(segment.size() == 3) {
-                auto segIntersections = intersectBezierSegmentWithHorizontalLine(segment, y);
-                std::copy(segIntersections.begin(), segIntersections.end(), std::back_inserter(intersections));
-            }
-            if(segment.size() == 2) {
-                auto segIntersections = intersectLineWithHorizontalLine(segment, y);
-                std::copy(segIntersections.begin(), segIntersections.end(), std::back_inserter(intersections));
+//        y = 6;
+        for(auto curve : primitiveCurvesSegments) {
+            for(auto segment : curve) {
+                if(segment.size() == 3) {
+                    auto segIntersections = intersectBezierSegmentWithHorizontalLine(segment, y);
+                    std::copy(segIntersections.begin(), segIntersections.end(), std::back_inserter(intersections));
+                }
+                if(segment.size() == 2) {
+                    auto segIntersections = intersectLineWithHorizontalLine(segment, y);
+                    std::copy(segIntersections.begin(), segIntersections.end(), std::back_inserter(intersections));
+                }
             }
         }
-        std::unique(intersections.begin(), intersections.end(), [](BezierPoint a, BezierPoint b) { return a.x - b.x < 0.0004 && a.y - b.y < 0.0004;});
         std::sort(intersections.begin(), intersections.end(), [](BezierPoint a, BezierPoint b) { return a.x < b.x;});
-        if((intersections.size() % 2) != 0) {
+        if((intersections.size() % 2) != 0) { // DEBUG
             qDebug() <<  y << " with size " << intersections.size();
         }
         for(int i = 0; i < intersections.size() / 2; ++i) {
@@ -166,6 +281,31 @@ QVector<QPair<BezierPoint, BezierPoint> > BezierCurve::getFillingArea(){
     return fillingLines;
 }
 
+void BezierCurve::extractPrimitiveCurveSegments(QImage* image){
+    QVector<QVector<BezierPoint>> scaledAndShiftedCurvesPoints;
+    QVector<double> minYPoints;
+    QVector<double> maxYPoints;
+    for(auto originCurve : originPointsSet) {
+        QVector<BezierPoint> scaledAndShiftedPoints;
+        for(auto originPoint : originCurve) {
+            scaledAndShiftedPoints.push_back(scaleAndShiftPoint(originPoint));
+        }
+        scaledAndShiftedCurvesPoints.push_back(scaledAndShiftedPoints);
+        minYPoints.push_back((std::min_element(scaledAndShiftedPoints.begin(), scaledAndShiftedPoints.end(), [](BezierPoint a, BezierPoint b) { return a.y < b.y;}))->y);
+        maxYPoints.push_back((std::max_element(scaledAndShiftedPoints.begin(), scaledAndShiftedPoints.end(), [](BezierPoint a, BezierPoint b) { return a.y < b.y;}))->y);
+    }
+    minY = *std::min_element(minYPoints.begin(), minYPoints.end());
+    maxY = *std::max_element(maxYPoints.begin(), maxYPoints.end());
+    auto height = image->height();
+    minY = minY < (- height / 2) ? (- height / 2) : minY;
+    maxY = maxY > height / 2 ? height / 2 : maxY;
+
+    primitiveCurvesSegments.clear();
+    for(auto curvePoints : scaledAndShiftedCurvesPoints) {
+        primitiveCurvesSegments.push_back(separateToPrimitiveSegments(curvePoints));
+    }
+}
+
 BezierCurve::BezierCurve() : scale(0), fill(true), outline(true), xOffset(0), yOffset(0), maxY(0), minY(0) {
 }
 
@@ -173,24 +313,24 @@ void BezierCurve::draw(QImage *image){
     if(!outline && !fill) {
         return;
     }
-    QVector<BezierPoint> scaledAndShiftedPoints;
-    for(auto originPoint : originPoints) {
-        scaledAndShiftedPoints.push_back(scaleAndShiftPoint(originPoint));
-    }
-    minY = (std::min_element(scaledAndShiftedPoints.begin(), scaledAndShiftedPoints.end(), [](BezierPoint a, BezierPoint b) { return a.y < b.y;}))->y;
-    maxY = (std::max_element(scaledAndShiftedPoints.begin(), scaledAndShiftedPoints.end(), [](BezierPoint a, BezierPoint b) { return a.y < b.y;}))->y;
-    primitiveSegments = separateToPrimitiveSegments(scaledAndShiftedPoints);
+    extractPrimitiveCurveSegments(image);
 
     if(outline) {
         drawOutline(image);
     }
+
     if(fill) {
         auto area = getFillingArea();
         auto bits = image->bits();
         auto bytesPerLine = image->bytesPerLine();
         for(QPair<BezierPoint, BezierPoint> line : area) {
             int y = std::round(line.first.y);
-            for(int x = std::round(line.first.x); x < std::round(line.second.x); ++x) {
+            int startingX = std::round(line.first.x);
+            int endingX = std::round(line.second.x);
+            int width = image->width();
+            startingX = startingX < (- width / 2) ?  - width / 2 : startingX;
+            endingX = endingX > width / 2 ? width / 2 : endingX;
+            for(int x = startingX; x < endingX; ++x) {
 //                int position = y * bytesPerLine + x * 3;
 //                bits[position] = 255;
 //                bits[position + 1] = 255;
@@ -202,20 +342,25 @@ void BezierCurve::draw(QImage *image){
 }
 
 void BezierCurve::drawOutline(QImage *image){
-    for(QVector<BezierPoint> segment : primitiveSegments) {
-        if(segment.size() == 2) {
-            Line line;
-            line.setCoordinates(segment[0], segment[1]);
-            line.draw(image);
-        } else if (segment.size() == 3) {
-            drawCurve(image, segment[0], segment[1], segment[2]);
+    for(QVector<QVector<BezierPoint>> curve : primitiveCurvesSegments){
+        for(QVector<BezierPoint> segment : curve) {
+            if(segment.size() == 2) {
+                Line line;
+                line.setCoordinates(segment[0], segment[1]);
+                line.draw(image);
+            } else if (segment.size() == 3) {
+                drawCurve(image, segment[0], segment[1], segment[2]);
+            }
         }
     }
 }
 
 void BezierCurve::drawCurve(QImage *image, BezierPoint p0, BezierPoint p1, BezierPoint p2){
     BezierPoint middle = getMiddlePoint(p0, p1, p2);
-    if(computeDistanceToLine(p0, p2, middle) * p0.distance(p2) < DELTA) {
+    if(p0 == p1 || p1 == p2 || p1 == p2){
+        return;
+    }
+    if(computeDistanceToLine(p0, p2, middle) < MIN_DISTANCE_TRESHOLD) {
         Line line1;
         line1.setCoordinates(p0, p2);
         line1.draw(image);

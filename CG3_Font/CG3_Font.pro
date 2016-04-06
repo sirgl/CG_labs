@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     BezierPoint.cpp \
     BezierCurve.cpp \
     Line.cpp \
-    CurveController.cpp
+    CurveController.cpp \
+    CheckBoxGroup.cpp
 
 HEADERS  += MainWindow.h \
     Circle.h \
@@ -50,6 +51,7 @@ HEADERS  += MainWindow.h \
     BezierPoint.h \
     BezierCurve.h \
     Line.h \
-    CurveController.h
+    CurveController.h \
+    CheckBoxGroup.h
 
 FORMS    +=

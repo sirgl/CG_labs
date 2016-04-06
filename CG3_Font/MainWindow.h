@@ -18,6 +18,9 @@ class MainWindow : public QMainWindow
     PickGroup* yGroup;
     PickGroup* scaleGroup;
 
+    CheckBoxGroup* fillBox;
+    CheckBoxGroup* outlineBox;
+
     QHBoxLayout* mainLayout;
 
 //    CircleController* circleController;
@@ -37,7 +40,8 @@ class MainWindow : public QMainWindow
     void initMenu();
     void initControlsBox();
     void initMainBox();
-    void initLemniscateController();
+    void initCurveController();
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();

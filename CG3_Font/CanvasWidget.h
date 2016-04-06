@@ -11,8 +11,12 @@ class   CanvasWidget : public QWidget {
 
     Canvas* canvas;
 
+    int centerX;
+    int centerY;
+
     static const int DEFAULT_WIDTH = 300;
     static const int DEFAULT_HEIGHT = 200;
+
 public:
     explicit CanvasWidget(QWidget *parent = 0);
 
@@ -29,9 +33,11 @@ protected:
 
     void paintEvent(QPaintEvent*) override;
     void resizeEvent(QResizeEvent*);
+    void mousePressEvent(QMouseEvent * event);
+    void mouseMoveEvent(QMouseEvent * event);
 
 signals:
-
+    void centerPositionChanged(int deltaX, int deltaY);
 public slots:
 };
 

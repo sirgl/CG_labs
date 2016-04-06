@@ -2,6 +2,7 @@
 #define BEZIERPOINT_H\
 
 #include "Point.h"
+#include <QJsonObject>
 
 struct BezierPoint{
     double x;
@@ -20,6 +21,9 @@ struct BezierPoint{
     bool operator == (const BezierPoint& point);
 
     operator Point();
+
+    QJsonObject saveToJson();
+    void loadFromJson(QJsonObject object);
 };
 
 BezierPoint operator *(double multiplier, const BezierPoint& point);

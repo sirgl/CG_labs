@@ -11,6 +11,9 @@
 #include "Axis.h"
 #include "BezierCurve.h"
 #include "Line.h"
+#include <QCheckBox>
+#include <QHBoxLayout>
+#include "CheckBoxGroup.h"
 
 void MainWindow::initMenu(){
     auto fileMenu = menuBar()->addMenu("File");
@@ -43,6 +46,28 @@ void MainWindow::initControlsBox(){
     scaleGroup->setMax(MAX_SCALE_CONTROLS);
     controlsLayout->addWidget(scaleGroup);
 
+
+    // TODO to separate
+
+//    QGroupBox* fillBox = new QGroupBox;
+//    QGridLayout* fillLayout = new QGridLayout;
+//    fillBox->setLayout(fillLayout);
+//    QLabel* fillLabel = new QLabel("Fill");
+//    QCheckBox* fillCheckBox = new QCheckBox;
+//    fillLayout->addWidget(fillLabel, 0, 0);
+//    fillLayout->addWidget(fillCheckBox, 0, 1);
+//    fillBox->setFixedHeight(80);
+
+    fillBox = new CheckBoxGroup;
+    fillBox->setLabel("Fill");
+    controlsLayout->addWidget(fillBox);
+
+    outlineBox = new CheckBoxGroup;
+    outlineBox->setLabel("Outline");
+    controlsLayout->addWidget(outlineBox);
+
+    // END TODO
+
     mainLayout->addWidget(controlsBox);
 }
 
@@ -57,15 +82,13 @@ void MainWindow::initMainBox(){
     setCentralWidget(mainBox);
 }
 
-void MainWindow::initLemniscateController(){
+void MainWindow::initCurveController(){
 
     Axis* xAxis = new Axis;
     Axis* yAxis = new Axis;
     yAxis->setMode(true);
     canvasWidget->add(xAxis);
     canvasWidget->add(yAxis);
-
-
 
     BezierCurve* curve = new BezierCurve;
 
@@ -80,9 +103,10 @@ void MainWindow::initLemniscateController(){
     points.push_back(pointsArr[1]);
     points.push_back(pointsArr[2]);
     points.push_back(pointsArr[3]);
-    curve->setPoints(points);
-    curve->setOutline(true);
-//    curve->setScale(1);
+
+    QVector<QVector<BezierPoint>> pointsSet;
+    pointsSet.push_back(points);
+    curve->setPointsSets(pointsSet);
     curve->setXOffset(50);
     curve->setXOffset(-50);
     canvasWidget->add(curve);
@@ -92,21 +116,17 @@ void MainWindow::initLemniscateController(){
     controller->setXGroup(xGroup);
     controller->setYGroup(yGroup);
     controller->setScaleGroup(scaleGroup);
+    controller->setFillGroup(fillBox);
+    controller->setOutlineGroup(outlineBox);
     controller->setCurve(curve);
-
-//    lemniscateController = new LemniscateController;
-//    lemniscateController->setX1Group(x1Group);
-//    lemniscateController->setY1Group(y1Group);
-//    lemniscateController->setX2Group(x2Group);
-//    lemniscateController->setY2Group(y2Group);
-//    lemniscateController->setLemniscate(lem);
+    connect(canvasWidget, SIGNAL(centerPositionChanged(int,int)), controller, SLOT(centerPositionChanged(int,int)));
 }
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent){
     initMainBox();
     initControlsBox();
-    initLemniscateController();
+    initCurveController();
     initMenu();
     resize(800, 600);
 }
@@ -121,17 +141,17 @@ void MainWindow::loadConfig() {
         return;
     }
     try{
-//        auto json = Tools::loadJsonFromFile(path);
-//        Config config;
-//        config.loadFromJson(json);
-//        lemniscateController->setLemniscate(config.lemniscate);
-//        canvasWidget->removeAll();
-//        Axis* xAxis = new Axis;
-//        Axis* yAxis = new Axis;
-//        yAxis->setMode(true);
-//        canvasWidget->add(xAxis);
-//        canvasWidget->add(yAxis);
-//        canvasWidget->add(config.lemniscate);
+        auto json = Tools::loadJsonFromFile(path);
+        BezierCurve* curve = new BezierCurve;
+        curve->loadFromJson(json);
+        controller->setCurve(curve);
+        canvasWidget->removeAll();
+        Axis* xAxis = new Axis;
+        Axis* yAxis = new Axis;
+        yAxis->setMode(true);
+        canvasWidget->add(xAxis);
+        canvasWidget->add(yAxis);
+        canvasWidget->add(curve);
     }
     catch (ParserException e) {
         QMessageBox::critical(this, "Parsing error", e.what());
@@ -139,14 +159,12 @@ void MainWindow::loadConfig() {
 }
 
 void MainWindow::saveConfig() {
-//    auto savePath = QFileDialog::getSaveFileName();
-//    auto panel = new Panel(canvasWidget->getCanvasWidth(), canvasWidget->getCanvasHeight());
-//    Config config(lemniscateController->getLemniscate(), panel);
-//    auto json = config.saveToJson();
-//    QFile file(savePath);
-//    file.open(QIODevice::WriteOnly);
-//    QTextStream stream;
-//    stream.setDevice(&file);
-//    stream << QString(QJsonDocument(json).toJson());
-//    file.close();
+    auto savePath = QFileDialog::getSaveFileName();
+    auto json = controller->getCurve()->saveToJson();
+    QFile file(savePath);
+    file.open(QIODevice::WriteOnly);
+    QTextStream stream;
+    stream.setDevice(&file);
+    stream << QString(QJsonDocument(json).toJson());
+    file.close();
 }
