@@ -8,6 +8,8 @@
 #include <ParserException.h>
 
 using Tools::sqr;
+using std::abs;
+using std::round;
 static const double MIN_DISTANCE_TRESHOLD = 0.5;
 
 void BezierCurve::setPointsSets(QVector<QVector<BezierPoint> > value){
@@ -202,49 +204,52 @@ QVector<QVector<BezierPoint> > BezierCurve::separateToPrimitiveSegments(QVector<
     return segments;
 }
 
-QVector<BezierPoint> BezierCurve::intersectBezierSegmentWithHorizontalLine(QVector<BezierPoint> bezier, double y){
+QVector<BezierPoint> BezierCurve::intersectBezierSegmentWithHorizontalLine(QVector<BezierPoint> bezier, QVector<BezierPoint> nextLine, double y){
     auto y0 = bezier[0].y;
     auto y1 = bezier[1].y;
     auto y2 = bezier[2].y;
-    double sqrtDiscriminant = std::sqrt(4 * sqr(y1 - y0) - 4 * (y0 - y) * (y0 - 2 * y1 + y2));
-    double t1 = (2 * (y0 - y1) + sqrtDiscriminant) / (2 * (y0 - 2 * y1 + y2));
-    double t2 = (2 * (y0 - y1) - sqrtDiscriminant) / (2 * (y0 - 2 * y1 + y2));
+
     QVector<BezierPoint> intersectionPoints;
-    if(t1 >= 0 && t1 <= 1) {
+    double denominator = y0 - 2 * y1 + y2;
+    double discriminant = sqr(y1) - y0 * y2 + y * denominator;
+    if (discriminant < 0) {
+        return intersectionPoints;
+    }
+    if(discriminant < 10e-20) {
+        qDebug() << "D = 0 when y = " << y;
+        return intersectionPoints;
+    }
+
+    double t1 = ((y0 - y1) + sqrt(discriminant)) / denominator;
+    double t2 = ((y0 - y1) - sqrt(discriminant)) / denominator;
+
+    if(t1 >= 0 && (t1 - 1) < 0.05) {
         auto point = getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t1);
-        auto x0Delta = std::abs(bezier[0].x - point.x);
-        auto y0Delta = std::abs(bezier[0].y - point.y);
-        if (!(x0Delta < 0.04 && y0Delta < 0.04)) {
-            intersectionPoints.push_back(point);
-        }
+        auto p1Intersections = handleBezierBorderConditions(point, bezier, nextLine, y, t1);
+        std::copy(p1Intersections.begin(), p1Intersections.end(), std::back_inserter(intersectionPoints));
     }
-    if(t2 >= 0 && t2 <= 1) {
+    if(t2 >= 0 && (t2 - 1) < 0.05) {
         auto point = getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t2);
-        auto x0Delta = std::abs(bezier[0].x - point.x);
-        auto y0Delta = std::abs(bezier[0].y - point.y);
-        if (!(x0Delta < 0.04 && y0Delta < 0.04)) {
-            intersectionPoints.push_back(point);
-        }
-    }
-    if(2 == intersectionPoints.size() && intersectionPoints[0] == intersectionPoints[1]) {
-        intersectionPoints.pop_back();
+        auto p2Intersections = handleBezierBorderConditions(point, bezier, nextLine, y, t2);
+        std::copy(p2Intersections.begin(), p2Intersections.end(), std::back_inserter(intersectionPoints));
     }
     return intersectionPoints;
+
 }
 
-QVector<BezierPoint> BezierCurve::intersectLineWithHorizontalLine(QVector<BezierPoint> line, double y){
+QVector<BezierPoint> BezierCurve::intersectLineWithHorizontalLine(QVector<BezierPoint> line, QVector<BezierPoint> nextLine,double y){
     double y0 = line[0].y;
     double y1 = line[1].y;
-    if(y0 == y1 && y0  == y) {
-        return line;
-    }
     QVector<BezierPoint> result;
+    if(y0 == y1 && y0  == y) {
+        result.push_back(line[1]);
+        return result;
+    }
     double t = (y - y0) / (y1 - y0);
-    if(t >= -0 && t <= 1) {
+    if(t >= 0 - 10e-10 && t <= 1 + 10e-10) { // it doesn't need that?
         double x = line[0].x + (line[1].x - line[0].x) * t;
-        if(!(std::abs(line[0].x - std::round(x)) < 0.04 && std::abs(line[0].y - std::round(y) < 0.04))) {
-            result.push_back(BezierPoint(x, y, false));
-        }
+
+        result = handleBorderConditions(BezierPoint(x,y, false), line[0], line[1], nextLine, y, line[0]);
     }
     return result;
 }
@@ -255,20 +260,26 @@ BezierPoint BezierCurve::getBezierPointByParameter(BezierPoint p0, BezierPoint p
 
 QVector<QPair<BezierPoint, BezierPoint> > BezierCurve::getFillingArea(){
     QVector<QPair<BezierPoint, BezierPoint> > fillingLines;
-    for(int y = std::round(minY); y < std::round(maxY); ++y){
+    for(int y = std::round(minY) - 1; y < std::round(maxY) + 1; ++y){
         QVector<BezierPoint> intersections;
-//        y = 6;
+//        y = 69; // DEBUG
         for(auto curve : primitiveCurvesSegments) {
-            for(auto segment : curve) {
+            for(int i = 0; i < curve.size(); ++i) {
+                if(i == 13) {
+                    int debug = 4; //todo remove
+                }
+                auto segment = curve[i];
+                auto nextSegment = curve[(i+1) % curve.size()];
                 if(segment.size() == 3) {
-                    auto segIntersections = intersectBezierSegmentWithHorizontalLine(segment, y);
+                    auto segIntersections = intersectBezierSegmentWithHorizontalLine(segment, nextSegment, y);
                     std::copy(segIntersections.begin(), segIntersections.end(), std::back_inserter(intersections));
                 }
                 if(segment.size() == 2) {
-                    auto segIntersections = intersectLineWithHorizontalLine(segment, y);
+                    auto segIntersections = intersectLineWithHorizontalLine(segment, nextSegment, y);
                     std::copy(segIntersections.begin(), segIntersections.end(), std::back_inserter(intersections));
                 }
             }
+
         }
         std::sort(intersections.begin(), intersections.end(), [](BezierPoint a, BezierPoint b) { return a.x < b.x;});
         if((intersections.size() % 2) != 0) { // DEBUG
@@ -297,8 +308,8 @@ void BezierCurve::extractPrimitiveCurveSegments(QImage* image){
     minY = *std::min_element(minYPoints.begin(), minYPoints.end());
     maxY = *std::max_element(maxYPoints.begin(), maxYPoints.end());
     auto height = image->height();
-    minY = minY < (- height / 2) ? (- height / 2) : minY;
-    maxY = maxY > height / 2 ? height / 2 : maxY;
+//    minY = minY < (- height / 2) ? (- height / 2) : minY;
+//    maxY = maxY > height / 2 ? height / 2 : maxY;
 
     primitiveCurvesSegments.clear();
     for(auto curvePoints : scaledAndShiftedCurvesPoints) {
@@ -306,7 +317,98 @@ void BezierCurve::extractPrimitiveCurveSegments(QImage* image){
     }
 }
 
+QVector<BezierPoint> BezierCurve::handleBorderConditions(BezierPoint point, BezierPoint currentStartingPoint, BezierPoint currentEndPoint, QVector<BezierPoint> nextSegment, double y, BezierPoint previousSignificantPoint){
+    auto x = point.x;
+    QVector<BezierPoint> result;
+
+    auto yRounded = round(y);
+    if(abs(round(currentStartingPoint.y) - yRounded) < 10e-10) { // point is near to start
+        return result;
+    }
+    if(abs(round(currentEndPoint.y) - yRounded) <= 10e-10) { // point is near to end
+        bool is2Pointed = false;
+        if(previousSignificantPoint.y < y) { // check if all next segment points bellow y
+            if(nextSegment.size() == 2) {
+                if(nextSegment[1].y < y) {
+                    is2Pointed = true;
+                }
+            } else {
+                if(nextSegment[1].y < y && nextSegment[2].y < y) {
+                    is2Pointed = true;
+                }
+            }
+        } else if (previousSignificantPoint.y > y) { // check if all next segment points above y
+            if(nextSegment.size() == 2) {
+                if(nextSegment[1].y > y) {
+                    is2Pointed = true;
+                }
+            } else {
+                if(nextSegment[1].y > y && nextSegment[2].y > y) {
+                    is2Pointed = true;
+                }
+            }
+        }
+        if(is2Pointed) {
+            result.push_back(BezierPoint(x, y, false));
+            result.push_back(BezierPoint(x, y, false));
+            return result;
+        } else {
+            result.push_back(BezierPoint(x, y, false));
+            return result;
+        }
+    }
+    result.push_back(BezierPoint(x, y, false));
+    return result;
+}
+
+//handleBorderConditions(point, bezier[0], bezier[2], nextLine, y, bezier[1]);
+// I know, copypaste =(
+QVector<BezierPoint> BezierCurve::handleBezierBorderConditions(BezierPoint point, QVector<BezierPoint> bezier, QVector<BezierPoint> nextSegment, double y, double t){
+    auto x = point.x;
+    QVector<BezierPoint> result;
+
+    auto yRounded = round(y);
+    if(abs(round(bezier[0].y) - yRounded) < 10e-10 && t < 0.005) { // point is near to start
+        return result;
+    }
+    if(abs(round(bezier[2].y) - yRounded) <= 10e-10 && t > 0.995) { // point is near to end
+        bool is2Pointed = false;
+        if(bezier[1].y < y) { // check if all next segment points bellow y
+            if(nextSegment.size() == 2) {
+                if(nextSegment[1].y < y) {
+                    is2Pointed = true;
+                }
+            } else {
+                if(nextSegment[1].y < y && nextSegment[2].y < y) {
+                    is2Pointed = true;
+                }
+            }
+        } else if (bezier[1].y > y) { // check if all next segment points above y
+            if(nextSegment.size() == 2) {
+                if(nextSegment[1].y > y) {
+                    is2Pointed = true;
+                }
+            } else {
+                if(nextSegment[1].y > y && nextSegment[2].y > y) {
+                    is2Pointed = true;
+                }
+            }
+        }
+        if(is2Pointed) {
+            result.push_back(BezierPoint(x, y, false));
+            result.push_back(BezierPoint(x, y, false));
+            return result;
+        } else {
+            result.push_back(BezierPoint(x, y, false));
+            return result;
+        }
+    }
+    result.push_back(BezierPoint(x, y, false));
+    return result;
+}
+
 BezierCurve::BezierCurve() : scale(0), fill(true), outline(true), xOffset(0), yOffset(0), maxY(0), minY(0) {
+    fillColor = new QColor(0, 0, 255);
 }
 
 void BezierCurve::draw(QImage *image){
@@ -321,8 +423,6 @@ void BezierCurve::draw(QImage *image){
 
     if(fill) {
         auto area = getFillingArea();
-        auto bits = image->bits();
-        auto bytesPerLine = image->bytesPerLine();
         for(QPair<BezierPoint, BezierPoint> line : area) {
             int y = std::round(line.first.y);
             int startingX = std::round(line.first.x);
@@ -330,15 +430,28 @@ void BezierCurve::draw(QImage *image){
             int width = image->width();
             startingX = startingX < (- width / 2) ?  - width / 2 : startingX;
             endingX = endingX > width / 2 ? width / 2 : endingX;
-            for(int x = startingX; x < endingX; ++x) {
-//                int position = y * bytesPerLine + x * 3;
-//                bits[position] = 255;
-//                bits[position + 1] = 255;
-//                bits[position + 2] = 255;
-                DrawingTools::drawPixel(image, Point(x, y)); // TODO
+            for(int x = startingX; x <= endingX; ++x) {
+                DrawingTools::drawPixel(image, x, y, fillColor); // TODO
             }
         }
     }
+    for(auto curve : primitiveCurvesSegments) {
+        for(auto segment : curve) {
+            for(auto point : segment) {
+                Circle circle;
+                circle.setRadius(2);
+                circle.setX(point.x);
+                circle.setY(-point.y);
+                circle.draw(image);
+            }
+        }
+    }
+    //DEBUG
+    Circle circle;
+    circle.setRadius(5);
+    circle.setX(-203);
+    circle.setY(-68);
+    circle.draw(image);
 }
 
 void BezierCurve::drawOutline(QImage *image){

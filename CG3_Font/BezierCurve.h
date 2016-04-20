@@ -7,6 +7,7 @@
 #include <QObject>
 #include "Point.h"
 #include <QJsonObject>
+#include <QColor>
 
 
 class BezierCurve : public Drawable{
@@ -22,16 +23,20 @@ class BezierCurve : public Drawable{
     double maxY;
     int maxX;
     int minX;
+    QColor* fillColor;
 
     QVector<QVector<BezierPoint>> originPointsSet;
     QVector<QVector<QVector<BezierPoint>>> primitiveCurvesSegments;
 
     QVector<QVector<BezierPoint>> separateToPrimitiveSegments(QVector<BezierPoint> points);
-    QVector<BezierPoint> intersectBezierSegmentWithHorizontalLine(QVector<BezierPoint> bezier, double y);
-    QVector<BezierPoint> intersectLineWithHorizontalLine(QVector<BezierPoint> line, double y);
+    QVector<BezierPoint> intersectBezierSegmentWithHorizontalLine(QVector<BezierPoint> bezier, QVector<BezierPoint> nextLine, double y);
+    QVector<BezierPoint> intersectLineWithHorizontalLine(QVector<BezierPoint> line, QVector<BezierPoint> nextLine, double y);
     static BezierPoint getBezierPointByParameter(BezierPoint p0, BezierPoint p1, BezierPoint p2, double t);
     QVector<QPair<BezierPoint, BezierPoint>> getFillingArea();
     void extractPrimitiveCurveSegments(QImage* image);
+
+    QVector<BezierPoint> handleBorderConditions(BezierPoint point, BezierPoint currentStartingPoint, BezierPoint currentEndPoint, QVector<BezierPoint> nextSegment, double y, BezierPoint previousSignificantPoint);
+    QVector<BezierPoint> handleBezierBorderConditions(BezierPoint point, QVector<BezierPoint> bezier, QVector<BezierPoint> nextSegment, double y, double t);
 public:
     BezierCurve();
     void draw(QImage* image) override;

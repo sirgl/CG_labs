@@ -7,10 +7,10 @@
 
 class Line : public Drawable
 {
-    double x1;
-    double y1;
-    double x2;
-    double y2;
+    int x1;
+    int y1;
+    int x2;
+    int y2;
 public:
     Line();
     void setCoordinates(double x1, double y1, double x2, double y2);

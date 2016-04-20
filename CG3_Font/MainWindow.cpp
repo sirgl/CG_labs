@@ -46,18 +46,6 @@ void MainWindow::initControlsBox(){
     scaleGroup->setMax(MAX_SCALE_CONTROLS);
     controlsLayout->addWidget(scaleGroup);
 
-
-    // TODO to separate
-
-//    QGroupBox* fillBox = new QGroupBox;
-//    QGridLayout* fillLayout = new QGridLayout;
-//    fillBox->setLayout(fillLayout);
-//    QLabel* fillLabel = new QLabel("Fill");
-//    QCheckBox* fillCheckBox = new QCheckBox;
-//    fillLayout->addWidget(fillLabel, 0, 0);
-//    fillLayout->addWidget(fillCheckBox, 0, 1);
-//    fillBox->setFixedHeight(80);
-
     fillBox = new CheckBoxGroup;
     fillBox->setLabel("Fill");
     controlsLayout->addWidget(fillBox);
@@ -65,8 +53,6 @@ void MainWindow::initControlsBox(){
     outlineBox = new CheckBoxGroup;
     outlineBox->setLabel("Outline");
     controlsLayout->addWidget(outlineBox);
-
-    // END TODO
 
     mainLayout->addWidget(controlsBox);
 }
@@ -84,33 +70,46 @@ void MainWindow::initMainBox(){
 
 void MainWindow::initCurveController(){
 
+//    Axis* xAxis = new Axis;
+//    Axis* yAxis = new Axis;
+//    yAxis->setMode(true);
+//    canvasWidget->add(xAxis);
+//    canvasWidget->add(yAxis);
+
+//    BezierCurve* curve = new BezierCurve;
+
+//    QVector<BezierPoint> points;
+//    BezierPoint pointsArr[] = {
+//        BezierPoint(-100, 20, true),
+//        BezierPoint(0, -200.5, false),
+//        BezierPoint(200, 30, true),
+//        BezierPoint(20, 70, true)
+//    };
+//    points.push_back(pointsArr[0]);
+//    points.push_back(pointsArr[1]);
+//    points.push_back(pointsArr[2]);
+//    points.push_back(pointsArr[3]);
+
+//    QVector<QVector<BezierPoint>> pointsSet;
+//    pointsSet.push_back(points);
+//    curve->setPointsSets(pointsSet);
+//    curve->setXOffset(50);
+//    curve->setXOffset(-50);
+//    canvasWidget->add(curve);
+
+    //DEBUG:
+    auto path = "./1.json";
+    auto json = Tools::loadJsonFromFile(path);
+    BezierCurve* curve = new BezierCurve;
+    curve->loadFromJson(json);
+    canvasWidget->removeAll();
     Axis* xAxis = new Axis;
     Axis* yAxis = new Axis;
     yAxis->setMode(true);
     canvasWidget->add(xAxis);
     canvasWidget->add(yAxis);
-
-    BezierCurve* curve = new BezierCurve;
-
-    QVector<BezierPoint> points;
-    BezierPoint pointsArr[] = {
-        BezierPoint(-100, 20, true),
-        BezierPoint(0, -200.5, false),
-        BezierPoint(200, 30, true),
-        BezierPoint(20, 70, true)
-    };
-    points.push_back(pointsArr[0]);
-    points.push_back(pointsArr[1]);
-    points.push_back(pointsArr[2]);
-    points.push_back(pointsArr[3]);
-
-    QVector<QVector<BezierPoint>> pointsSet;
-    pointsSet.push_back(points);
-    curve->setPointsSets(pointsSet);
-    curve->setXOffset(50);
-    curve->setXOffset(-50);
     canvasWidget->add(curve);
-
+    //END
 
     controller = new CurveController;
     controller->setXGroup(xGroup);
