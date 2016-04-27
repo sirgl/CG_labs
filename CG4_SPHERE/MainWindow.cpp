@@ -9,11 +9,13 @@
 #include "Tools.h"
 #include "Config.h"
 #include "Axis.h"
-#include "BezierCurve.h"
+//#include "BezierCurve.h"
 #include "Line.h"
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include "CheckBoxGroup.h"
+#include "SphereProjector.h"
+#include "SphereProjectorController.h"
 
 void MainWindow::initMenu(){
     auto fileMenu = menuBar()->addMenu("File");
@@ -70,6 +72,22 @@ void MainWindow::initMainBox(){
 
 void MainWindow::initCurveController(){
 
+    SphereProjector* projector = new  SphereProjector();
+    projector->setR(255);
+    projector->setScale(0);
+    projector->setX(10);
+    projector->setY(0);
+    projector->setFiltration(FiltrationType::bilinear);
+    canvasWidget->add(projector);
+
+    SphereProjectorController* control = new SphereProjectorController;
+    control->setXGroup(xGroup);
+    control->setYGroup(yGroup);
+    control->setScaleGroup(scaleGroup);
+    control->setSphereProjector(projector);
+
+    connect(canvasWidget, SIGNAL(centerPositionChanged(int,int)), control, SLOT(xyOffsetChanged(int,int)));
+
 //    Axis* xAxis = new Axis;
 //    Axis* yAxis = new Axis;
 //    yAxis->setMode(true);
@@ -97,7 +115,7 @@ void MainWindow::initCurveController(){
 //    curve->setXOffset(-50);
 //    canvasWidget->add(curve);
 
-//    //DEBUG:
+    //DEBUG:
 //    auto path = "./linestest.json";
 //    auto json = Tools::loadJsonFromFile(path);
 //    BezierCurve* curve = new BezierCurve;

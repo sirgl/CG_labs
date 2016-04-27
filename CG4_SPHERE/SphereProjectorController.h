@@ -1,0 +1,33 @@
+#ifndef SPHEREPROJECTORCONTROLLER_H
+#define SPHEREPROJECTORCONTROLLER_H
+
+#include <QObject>
+#include "PickGroup.h"
+#include "SphereProjector.h"
+
+class SphereProjectorController : public QObject
+{
+    Q_OBJECT
+
+    PickGroup* xGroup;
+    PickGroup* yGroup;
+    PickGroup* scaleGroup;
+    SphereProjector* sphereProjector;
+public:
+    SphereProjectorController();
+    void setXGroup(PickGroup* group);
+    void setYGroup(PickGroup* group);
+    void setScaleGroup(PickGroup* group);
+
+    SphereProjector *getSphereProjector() const;
+    void setSphereProjector(SphereProjector *projector);
+
+private slots:
+    void xChanged(int x);
+    void yChanged(int y);
+    void scaleChanged(int scale);
+public slots:
+    void xyOffsetChanged(int dx, int dy);
+};
+
+#endif // SPHEREPROJECTORCONTROLLER_H

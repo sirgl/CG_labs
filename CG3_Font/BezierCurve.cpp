@@ -223,12 +223,12 @@ QVector<BezierPoint> BezierCurve::intersectBezierSegmentWithHorizontalLine(QVect
     double t1 = ((y0 - y1) + sqrt(discriminant)) / denominator;
     double t2 = ((y0 - y1) - sqrt(discriminant)) / denominator;
 
-    if(t1 >= 0 && (t1 - 1) < 0.05) {
+    if(t1 >= 0 && (t1 - 1) < 10e-10) {
         auto point = getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t1);
         auto p1Intersections = handleBezierBorderConditions(point, bezier, nextLine, y, t1);
         std::copy(p1Intersections.begin(), p1Intersections.end(), std::back_inserter(intersectionPoints));
     }
-    if(t2 >= 0 && (t2 - 1) < 0.05) {
+    if(t2 >= 0 && (t2 - 1) < 10e-10) {
         auto point = getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t2);
         auto p2Intersections = handleBezierBorderConditions(point, bezier, nextLine, y, t2);
         std::copy(p2Intersections.begin(), p2Intersections.end(), std::back_inserter(intersectionPoints));
@@ -238,19 +238,23 @@ QVector<BezierPoint> BezierCurve::intersectBezierSegmentWithHorizontalLine(QVect
 }
 
 QVector<BezierPoint> BezierCurve::intersectLineWithHorizontalLine(QVector<BezierPoint> line, QVector<BezierPoint> nextLine,double y){
+//    double y0 = line[0].y;
+//    double y1 = line[1].y;
+//    QVector<BezierPoint> result;
+//    if(y0 == y1 && y0  == y) {
+//        result.push_back(line[1]);
+//        return result;
+//    }
+//    double t = (y - y0) / (y1 - y0);
+//    if(t >= 0 - 10e-10 && t <= 1 + 10e-10) { // it doesn't need that?
+//        double x = line[0].x + (line[1].x - line[0].x) * t;
+
+//        result = handleBorderConditions(BezierPoint(x,y, false), line[0], line[1], nextLine, y, line[0]);
+//    }
+//    return result;
     double y0 = line[0].y;
     double y1 = line[1].y;
     QVector<BezierPoint> result;
-    if(y0 == y1 && y0  == y) {
-        result.push_back(line[1]);
-        return result;
-    }
-    double t = (y - y0) / (y1 - y0);
-    if(t >= 0 - 10e-10 && t <= 1 + 10e-10) { // it doesn't need that?
-        double x = line[0].x + (line[1].x - line[0].x) * t;
-
-        result = handleBorderConditions(BezierPoint(x,y, false), line[0], line[1], nextLine, y, line[0]);
-    }
     return result;
 }
 
