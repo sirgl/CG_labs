@@ -31,6 +31,16 @@ void SphereProjectorController::scaleChanged(int scale)
     sphereProjector->setScale(scale);
 }
 
+void SphereProjectorController::filtrationChanged(QString filtration){
+    if(filtration == "bilinear") {
+        sphereProjector->setFiltration(FiltrationType::bilinear);
+    } else if (filtration == "nearest") {
+        sphereProjector->setFiltration(FiltrationType::nearest);
+    } else {
+        throw std::runtime_error("Bad filtration type");
+    }
+}
+
 void SphereProjectorController::xyOffsetChanged(int dx, int dy){
     auto newX = sphereProjector->getX() + dx;
     auto newY = sphereProjector->getX() + dx;
@@ -38,6 +48,17 @@ void SphereProjectorController::xyOffsetChanged(int dx, int dy){
     yGroup->setValue(newY);
     sphereProjector->setX(newX);
     sphereProjector->setY(newY);
+}
+
+ComboBoxGroup *SphereProjectorController::getFiltrationGroup() const
+{
+    return filtrationGroup;
+}
+
+void SphereProjectorController::setFiltrationGroup(ComboBoxGroup *group)
+{
+    filtrationGroup = group;
+    connect(group, SIGNAL(pickedItemChanged(QString)),this, SLOT(filtrationChanged(QString)));
 }
 
 SphereProjectorController::SphereProjectorController()

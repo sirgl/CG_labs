@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     Line.cpp \
     CheckBoxGroup.cpp \
     SphereProjector.cpp \
-    SphereProjectorController.cpp
+    SphereProjectorController.cpp \
+    ComboBoxGroup.cpp
 
 HEADERS  += MainWindow.h \
     Circle.h \
@@ -53,7 +54,8 @@ HEADERS  += MainWindow.h \
     CheckBoxGroup.h \
     SphereProjector.h \
     SphereProjectorController.h \
-    LoadingFileException.h
+    LoadingFileException.h \
+    ComboBoxGroup.h
 
 FORMS    +=
 

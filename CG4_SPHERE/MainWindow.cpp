@@ -16,6 +16,8 @@
 #include "SphereProjector.h"
 #include "SphereProjectorController.h"
 #include "LoadingFileException.h"
+#include "ComboBoxGroup.h"
+#include <QStringList>
 
 void MainWindow::initMenu(){
     auto fileMenu = menuBar()->addMenu("File");
@@ -48,6 +50,14 @@ void MainWindow::initControlsBox(){
     scaleGroup->setMax(MAX_SCALE_CONTROLS);
     controlsLayout->addWidget(scaleGroup);
 
+    filtrationGroup =  new ComboBoxGroup;
+    filtrationGroup->setLabel("Filtration");
+    QStringList list;
+    list.push_back("bilinear");
+    list.push_back("nearest");
+    filtrationGroup->setList(list);
+    controlsLayout->addWidget(filtrationGroup);
+
     mainLayout->addWidget(controlsBox);
 }
 
@@ -77,6 +87,7 @@ void MainWindow::initCurveController(){
     control->setXGroup(xGroup);
     control->setYGroup(yGroup);
     control->setScaleGroup(scaleGroup);
+    control->setFiltrationGroup(filtrationGroup);
     control->setSphereProjector(projector);
 
     connect(canvasWidget, SIGNAL(centerPositionChanged(int,int)), control, SLOT(xyOffsetChanged(int,int)));

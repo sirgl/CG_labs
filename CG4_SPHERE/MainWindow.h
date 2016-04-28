@@ -18,6 +18,7 @@ class MainWindow : public QMainWindow
     PickGroup* xGroup;
     PickGroup* yGroup;
     PickGroup* scaleGroup;
+    ComboBoxGroup* filtrationGroup;
 
     CheckBoxGroup* fillBox;
     CheckBoxGroup* outlineBox;

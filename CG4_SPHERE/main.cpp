@@ -9,15 +9,15 @@ const auto USAGE = "usage: <config file> [<output file>]";
 
 int main(int argc, char *argv[]){
     QApplication a(argc, argv);
-    if (1 == argc) {
+//    if (1 == argc) {
         MainWindow w;
         w.show();
         return a.exec();
-    }
-    if (3 == argc) {
-        CoreApplication core;
-        return core.exec(argc, argv);
-    }
+//    }
+//    if (3 == argc) {
+//        CoreApplication core;
+//        return core.exec(argc, argv);
+//    }
 
     qWarning() << USAGE;
     return EXIT_FAILURE;
