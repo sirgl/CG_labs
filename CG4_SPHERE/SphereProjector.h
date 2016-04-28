@@ -6,6 +6,7 @@
 #include <QVector2D>
 #include <QColor>
 #include <QImage>
+#include <QJsonObject>
 
 enum class FiltrationType {
     nearest,
@@ -19,12 +20,9 @@ class SphereProjector : public Drawable
     //theta, phi
     QPair<double, double> computeSphericalCoordinates(QVector3D vector);
     QVector2D computeTextureCoordinates(double theta, double phi);
-    QVector2D computeTextureCoordinates(QVector3D vector);
 
     QColor computeColorByTextureCoordinates(double u, double v);
     int computeBilinearFiltrationForOneChannel(double u_ratio, double v_ratio, double u_opposite, double v_opposite, int c1, int c2, int c3, int c4);
-
-//    const double d = 20000;
 
     int scale;
     double rScaled;
@@ -36,11 +34,15 @@ class SphereProjector : public Drawable
     int normalizedY;
     FiltrationType filtration;
     QImage* texture;
+    QString source;
 public:
     SphereProjector();
 
     void draw(QImage *image);
+    QJsonObject saveToJson();
+    void loadFromJson(QJsonObject object);
 
+    void setTexutureFile(QString filename);
     double getR() const;
     void setR(double value);
     int getScale() const;

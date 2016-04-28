@@ -9,13 +9,13 @@
 #include "Tools.h"
 #include "Config.h"
 #include "Axis.h"
-//#include "BezierCurve.h"
 #include "Line.h"
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include "CheckBoxGroup.h"
 #include "SphereProjector.h"
 #include "SphereProjectorController.h"
+#include "LoadingFileException.h"
 
 void MainWindow::initMenu(){
     auto fileMenu = menuBar()->addMenu("File");
@@ -48,14 +48,6 @@ void MainWindow::initControlsBox(){
     scaleGroup->setMax(MAX_SCALE_CONTROLS);
     controlsLayout->addWidget(scaleGroup);
 
-    fillBox = new CheckBoxGroup;
-    fillBox->setLabel("Fill");
-    controlsLayout->addWidget(fillBox);
-
-    outlineBox = new CheckBoxGroup;
-    outlineBox->setLabel("Outline");
-    controlsLayout->addWidget(outlineBox);
-
     mainLayout->addWidget(controlsBox);
 }
 
@@ -73,70 +65,21 @@ void MainWindow::initMainBox(){
 void MainWindow::initCurveController(){
 
     SphereProjector* projector = new  SphereProjector();
-    projector->setR(255);
     projector->setScale(0);
     projector->setX(10);
     projector->setY(0);
     projector->setFiltration(FiltrationType::bilinear);
+    projector->setTexutureFile("Lenna.png");
+
     canvasWidget->add(projector);
 
-    SphereProjectorController* control = new SphereProjectorController;
+    control = new SphereProjectorController;
     control->setXGroup(xGroup);
     control->setYGroup(yGroup);
     control->setScaleGroup(scaleGroup);
     control->setSphereProjector(projector);
 
     connect(canvasWidget, SIGNAL(centerPositionChanged(int,int)), control, SLOT(xyOffsetChanged(int,int)));
-
-//    Axis* xAxis = new Axis;
-//    Axis* yAxis = new Axis;
-//    yAxis->setMode(true);
-//    canvasWidget->add(xAxis);
-//    canvasWidget->add(yAxis);
-
-//    BezierCurve* curve = new BezierCurve;
-
-//    QVector<BezierPoint> points;
-//    BezierPoint pointsArr[] = {
-//        BezierPoint(-100, 20, true),
-//        BezierPoint(0, -200.5, false),
-//        BezierPoint(200, 30, true),
-//        BezierPoint(20, 70, true)
-//    };
-//    points.push_back(pointsArr[0]);
-//    points.push_back(pointsArr[1]);
-//    points.push_back(pointsArr[2]);
-//    points.push_back(pointsArr[3]);
-
-//    QVector<QVector<BezierPoint>> pointsSet;
-//    pointsSet.push_back(points);
-//    curve->setPointsSets(pointsSet);
-//    curve->setXOffset(50);
-//    curve->setXOffset(-50);
-//    canvasWidget->add(curve);
-
-    //DEBUG:
-//    auto path = "./linestest.json";
-//    auto json = Tools::loadJsonFromFile(path);
-//    BezierCurve* curve = new BezierCurve;
-//    curve->loadFromJson(json);
-//    canvasWidget->removeAll();
-//    Axis* xAxis = new Axis;
-//    Axis* yAxis = new Axis;
-//    yAxis->setMode(true);
-//    canvasWidget->add(xAxis);
-//    canvasWidget->add(yAxis);
-//    canvasWidget->add(curve);
-//    //END
-
-//    controller = new CurveController;
-//    controller->setXGroup(xGroup);
-//    controller->setYGroup(yGroup);
-//    controller->setScaleGroup(scaleGroup);
-//    controller->setFillGroup(fillBox);
-//    controller->setOutlineGroup(outlineBox);
-//    controller->setCurve(curve);
-//    connect(canvasWidget, SIGNAL(centerPositionChanged(int,int)), controller, SLOT(centerPositionChanged(int,int)));
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -158,17 +101,12 @@ void MainWindow::loadConfig() {
         return;
     }
     try{
-//        auto json = Tools::loadJsonFromFile(path);
-//        BezierCurve* curve = new BezierCurve;
-//        curve->loadFromJson(json);
-//        controller->setCurve(curve);
-//        canvasWidget->removeAll();
-//        Axis* xAxis = new Axis;
-//        Axis* yAxis = new Axis;
-//        yAxis->setMode(true);
-//        canvasWidget->add(xAxis);
-//        canvasWidget->add(yAxis);
-//        canvasWidget->add(curve);
+        auto json = Tools::loadJsonFromFile(path);
+        SphereProjector* projector = new SphereProjector;
+        projector->loadFromJson(json);
+        control->setSphereProjector(projector);
+        canvasWidget->removeAll();
+        canvasWidget->add(projector);
     }
     catch (ParserException e) {
         QMessageBox::critical(this, "Parsing error", e.what());
@@ -176,12 +114,12 @@ void MainWindow::loadConfig() {
 }
 
 void MainWindow::saveConfig() {
-//    auto savePath = QFileDialog::getSaveFileName();
-//    auto json = controller->getCurve()->saveToJson();
-//    QFile file(savePath);
-//    file.open(QIODevice::WriteOnly);
-//    QTextStream stream;
-//    stream.setDevice(&file);
-//    stream << QString(QJsonDocument(json).toJson());
-//    file.close();
+    auto savePath = QFileDialog::getSaveFileName();
+    auto json = control->getSphereProjector()->saveToJson();
+    QFile file(savePath);
+    file.open(QIODevice::WriteOnly);
+    QTextStream stream;
+    stream.setDevice(&file);
+    stream << QString(QJsonDocument(json).toJson());
+    file.close();
 }

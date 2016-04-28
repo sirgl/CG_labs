@@ -52,6 +52,9 @@ HEADERS  += MainWindow.h \
     Line.h \
     CheckBoxGroup.h \
     SphereProjector.h \
-    SphereProjectorController.h
+    SphereProjectorController.h \
+    LoadingFileException.h
 
 FORMS    +=
+
+RESOURCES +=

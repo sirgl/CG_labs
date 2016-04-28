@@ -9,6 +9,7 @@
 #include "CircleController.h"
 #include "CanvasWidget.h"
 #include "CurveController.h"
+#include "SphereProjectorController.h"
 
 class MainWindow : public QMainWindow
 {
@@ -23,8 +24,7 @@ class MainWindow : public QMainWindow
 
     QHBoxLayout* mainLayout;
 
-//    CircleController* circleController;
-    CurveController* controller;
+    SphereProjectorController* control;
 
     CanvasWidget* canvasWidget;
 

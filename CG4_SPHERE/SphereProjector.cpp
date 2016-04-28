@@ -4,6 +4,9 @@
 #include <QDebug>
 #include "DrawingTools.h"
 #include <cmath>
+#include "LoadingFileException.h"
+#include "ParserException.h"
+
 
 using Tools::sqr;
 
@@ -36,11 +39,6 @@ QPair<double, double> SphereProjector::computeSphericalCoordinates(QVector3D vec
 }
 
 QVector2D SphereProjector::computeTextureCoordinates(double theta, double phi){
-//    int phiShiftedDegrees = (int)std::round((phi / (2 * M_PI)) * 360 + x) % 360;
-//    int thetaShiftedDegrees = (int) std::round((theta / (2 * M_PI)) * 360 + y) % 360;
-//    double newPhi = ((double)phiShiftedDegrees / 360) * 2 * M_PI;
-//    double newTheta = ((double)thetaShiftedDegrees / 360) * 2 * M_PI;
-
     auto newPhi = (((double)normalizedX / 360) * 2 * M_PI) + phi + 0.5 * M_PI;
     double intpart;
     double fracpart = std::modf(newPhi / ( M_PI), &intpart);
@@ -55,24 +53,7 @@ QVector2D SphereProjector::computeTextureCoordinates(double theta, double phi){
     return QVector2D(u, v);
 }
 
-//Bad method
-QVector2D SphereProjector::computeTextureCoordinates(QVector3D vector){
-    auto x = vector.x();
-    auto y = vector.y();
-    auto z = vector.z();
-    auto u = 0.5 + std::atan2(z, x) / 2 * M_PI;
-    auto v = 0.5 - std::asin(y) / M_PI;
-    return QVector2D(u, v);
-}
-
 QColor SphereProjector::computeColorByTextureCoordinates(double u, double v){ // u,v from 0 to 1
-//    auto newU = u - std::floor(u);
-//    auto newV = v - std::floor(v);
-//    if((newU < 0.5 && newV < 0.5) || (newU >= 0.5 && newV >= 0.5)) {
-//        return QColor(0, 0, 0);
-//    }
-//    return QColor(255, 255, 255);
-
     if(filtration == FiltrationType::nearest) {
         auto newU = 0.5 + u * texture->height();
         auto newV = 0.5 + v * texture->width();
@@ -98,16 +79,9 @@ QColor SphereProjector::computeColorByTextureCoordinates(double u, double v){ //
         auto r = computeBilinearFiltrationForOneChannel(u_ratio, v_ratio, u_opposite, v_opposite, c1.red(), c2.red(), c3.red(), c4.red());
         auto g = computeBilinearFiltrationForOneChannel(u_ratio, v_ratio, u_opposite, v_opposite, c1.green(), c2.green(), c3.green(), c4.green());
         auto b = computeBilinearFiltrationForOneChannel(u_ratio, v_ratio, u_opposite, v_opposite, c1.blue(), c2.blue(), c3.blue(), c4.blue());
-        if(r > 255 || g > 255 || b > 255) {
-             auto d = 1;
-        }
-        if(r < 0 || g < 0 || b < 0) {
-             auto d = 1;
-        }
         return QColor(r, g, b);
     }
-
-
+    return QColor(255, 255, 255);
 }
 
 int SphereProjector::computeBilinearFiltrationForOneChannel(double u_ratio, double v_ratio, double u_opposite, double v_opposite, int c1, int c2, int c3, int c4){
@@ -122,6 +96,7 @@ FiltrationType SphereProjector::getFiltration() const
 void SphereProjector::setFiltration(const FiltrationType &value)
 {
     filtration = value;
+    emit redraw();
 }
 
 
@@ -171,14 +146,12 @@ double SphereProjector::getR() const
 void SphereProjector::setR(double value)
 {
     r = value;
-
+    emit redraw();
 }
 
 SphereProjector::SphereProjector() : r(0), scale(0), rScaled(0), x(0), y(0), filtration(FiltrationType::nearest)
 {
-    texture = new QImage();
-//    texture->load("Lenna.png");
-    texture->load("1.jpg");
+    setR(255);
 }
 
 void SphereProjector::draw(QImage *image){
@@ -189,28 +162,81 @@ void SphereProjector::draw(QImage *image){
             auto newX = x - width / 2;
             auto newY = y - height / 2;
 
-
             QVector3D coords;
             auto success = computeSphereIntersectionCoordinates(QVector2D(newX, newY), coords);
             if(!success) {
                 continue;
             }
 
-
-            //DEBUG
-
-//            auto mockX = (double)x / image->width();
-//            auto mockY = (double)y / image->height();
-//            QVector2D mockCoords(mockX, mockY);
-//            auto color = computeColorByTextureCoordinates(mockCoords.x(), mockCoords.y());
-//            DrawingTools::drawPixel(image, Point(newX, newY), &color);
-
-            //END DEBUG
-
             auto sphericalCoords = computeSphericalCoordinates(coords);
             auto textureCoords = computeTextureCoordinates(sphericalCoords.first, sphericalCoords.second);
             auto color = computeColorByTextureCoordinates(textureCoords.x(), textureCoords.y());
             DrawingTools::drawPixel(image, Point(newX, newY), &color);
         }
+    }
+}
+
+QJsonObject SphereProjector::saveToJson(){
+    QJsonObject object;
+    object["x"] = x;
+    object["y"] = y;
+    object["scale"] = scale;
+    object["filter"] = filtration == FiltrationType::nearest ? "nearest" : "bilinear";
+    object["source"] = source;
+    return object;
+}
+
+void SphereProjector::loadFromJson(QJsonObject object){
+    auto xRef = object["x"];
+    if(!xRef.isDouble()) {
+        throw ParserException("Bad json format");
+    }
+    auto xObj = xRef.toInt();
+
+    auto yRef = object["y"];
+    if(!yRef.isDouble()) {
+        throw ParserException("Bad json format");
+    }
+    auto yObj = yRef.toInt();
+
+    auto scaleRef = object["scale"];
+    if(!scaleRef.isDouble()) {
+        throw ParserException("Bad json format");
+    }
+    auto scaleObj = scaleRef.toDouble();
+
+    auto filterRef = object["filter"];
+    if(!filterRef.isString()) {
+        throw ParserException("Bad json format");
+    }
+    auto filterObj = filterRef.toString();
+    if(!(filterObj == "bilinear" || filterObj == "nearest")) {
+        throw ParserException("Bad json format: bad filtration type");
+    }
+    FiltrationType filtrationType;
+    if(filterObj == "bilinear") {
+        filtrationType = FiltrationType::bilinear;
+    }
+    if(filterObj == "nearest") {
+        filtrationType = FiltrationType::nearest;
+    }
+    auto sourceRef = object["source"];
+    if(!sourceRef.isString()) {
+        throw ParserException("Bad json format");
+    }
+    auto sourceObj = sourceRef.toString();
+
+    setX(xObj);
+    setY(yObj);
+    setScale(scaleObj);
+    setFiltration(filtrationType);
+    setTexutureFile(sourceObj);
+}
+
+void SphereProjector::setTexutureFile(QString filename){
+    texture = new QImage();
+    source = filename;
+    if(!texture->load(filename)){
+        throw LoadingFileException("File not found");
     }
 }
