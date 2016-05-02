@@ -42,8 +42,8 @@ void SphereProjectorController::filtrationChanged(QString filtration){
 }
 
 void SphereProjectorController::xyOffsetChanged(int dx, int dy){
-    auto newX = sphereProjector->getX() + dy; // it's correct!
-    auto newY = sphereProjector->getY() + dx;
+    auto newX = sphereProjector->getX() - dx; // it's correct!
+    auto newY = sphereProjector->getY() - dy;
     xGroup->setValue(newX);
     yGroup->setValue(newY);
     sphereProjector->setX(newX);

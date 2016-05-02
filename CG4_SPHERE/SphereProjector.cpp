@@ -41,12 +41,19 @@ QPair<double, double> SphereProjector::computeSphericalCoordinates(QVector3D vec
 
 QVector2D SphereProjector::computeTextureCoordinates(double theta, double phi){
 //    auto newPhi = (((double)normalizedY / 360) * 2 * M_PI) + phi + 0.5 * M_PI;
-    auto newPhi = (((double)normalizedY / 360) * 2 * M_PI) + phi + M_PI;
+    auto newPhi = (((double)normalizedX / 360) * 2 * M_PI) + phi + M_PI;
 //    newPhi = std::fmod(newPhi, M_PI);
     newPhi = std::fmod(newPhi, 2 * M_PI);
 
-    auto newTheta = (((double)normalizedX / 360) * 2 * M_PI) + theta;
+    auto newTheta = (((double)normalizedY / 360) * 2 * M_PI) + theta;
     newTheta = std::fmod(newTheta, M_PI);
+//    auto normTheta = std::fmod(newTheta, 2 * M_PI);
+//    if(normTheta < M_PI) {
+//        newTheta = normTheta;
+//    } else {
+//        newTheta = 2 * M_PI - normTheta;
+//        newPhi = 2 * M_PI - newPhi;
+//    }
 
     auto u = (newPhi / (2 * M_PI));
     auto v = 1 -(newTheta / (M_PI));

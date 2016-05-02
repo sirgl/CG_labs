@@ -97,28 +97,28 @@ void MainWindow::initCurveController(){
 //    curve->setXOffset(-50);
 //    canvasWidget->add(curve);
 
-//    //DEBUG:
-//    auto path = "./linestest.json";
-//    auto json = Tools::loadJsonFromFile(path);
-//    BezierCurve* curve = new BezierCurve;
-//    curve->loadFromJson(json);
-//    canvasWidget->removeAll();
-//    Axis* xAxis = new Axis;
-//    Axis* yAxis = new Axis;
-//    yAxis->setMode(true);
-//    canvasWidget->add(xAxis);
-//    canvasWidget->add(yAxis);
-//    canvasWidget->add(curve);
-//    //END
+    //DEBUG:
+    auto path = "./linestest.json";
+    auto json = Tools::loadJsonFromFile(path);
+    BezierCurve* curve = new BezierCurve;
+    curve->loadFromJson(json);
+    canvasWidget->removeAll();
+    Axis* xAxis = new Axis;
+    Axis* yAxis = new Axis;
+    yAxis->setMode(true);
+    canvasWidget->add(xAxis);
+    canvasWidget->add(yAxis);
+    canvasWidget->add(curve);
+    //END
 
-//    controller = new CurveController;
-//    controller->setXGroup(xGroup);
-//    controller->setYGroup(yGroup);
-//    controller->setScaleGroup(scaleGroup);
-//    controller->setFillGroup(fillBox);
-//    controller->setOutlineGroup(outlineBox);
-//    controller->setCurve(curve);
-//    connect(canvasWidget, SIGNAL(centerPositionChanged(int,int)), controller, SLOT(centerPositionChanged(int,int)));
+    controller = new CurveController;
+    controller->setXGroup(xGroup);
+    controller->setYGroup(yGroup);
+    controller->setScaleGroup(scaleGroup);
+    controller->setFillGroup(fillBox);
+    controller->setOutlineGroup(outlineBox);
+    controller->setCurve(curve);
+    connect(canvasWidget, SIGNAL(centerPositionChanged(int,int)), controller, SLOT(centerPositionChanged(int,int)));
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -140,17 +140,17 @@ void MainWindow::loadConfig() {
         return;
     }
     try{
-//        auto json = Tools::loadJsonFromFile(path);
-//        BezierCurve* curve = new BezierCurve;
-//        curve->loadFromJson(json);
-//        controller->setCurve(curve);
-//        canvasWidget->removeAll();
-//        Axis* xAxis = new Axis;
-//        Axis* yAxis = new Axis;
-//        yAxis->setMode(true);
-//        canvasWidget->add(xAxis);
-//        canvasWidget->add(yAxis);
-//        canvasWidget->add(curve);
+        auto json = Tools::loadJsonFromFile(path);
+        BezierCurve* curve = new BezierCurve;
+        curve->loadFromJson(json);
+        controller->setCurve(curve);
+        canvasWidget->removeAll();
+        Axis* xAxis = new Axis;
+        Axis* yAxis = new Axis;
+        yAxis->setMode(true);
+        canvasWidget->add(xAxis);
+        canvasWidget->add(yAxis);
+        canvasWidget->add(curve);
     }
     catch (ParserException e) {
         QMessageBox::critical(this, "Parsing error", e.what());
@@ -158,12 +158,12 @@ void MainWindow::loadConfig() {
 }
 
 void MainWindow::saveConfig() {
-//    auto savePath = QFileDialog::getSaveFileName();
-//    auto json = controller->getCurve()->saveToJson();
-//    QFile file(savePath);
-//    file.open(QIODevice::WriteOnly);
-//    QTextStream stream;
-//    stream.setDevice(&file);
-//    stream << QString(QJsonDocument(json).toJson());
-//    file.close();
+    auto savePath = QFileDialog::getSaveFileName();
+    auto json = controller->getCurve()->saveToJson();
+    QFile file(savePath);
+    file.open(QIODevice::WriteOnly);
+    QTextStream stream;
+    stream.setDevice(&file);
+    stream << QString(QJsonDocument(json).toJson());
+    file.close();
 }
