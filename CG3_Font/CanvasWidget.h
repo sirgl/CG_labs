@@ -37,7 +37,7 @@ protected:
     void mouseMoveEvent(QMouseEvent * event);
 
 signals:
-    void centerPositionChanged(int deltaX, int deltaY);
+    void centerPositionChanged(double deltaX, double deltaY);
 public slots:
 };
 

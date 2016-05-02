@@ -64,9 +64,12 @@ void CurveController::setCurve(BezierCurve *value){
     outlineGroup->setState(curve->getOutline());
 }
 
-void CurveController::centerPositionChanged(int deltaX, int deltaY){
-    auto newX = curve->getXOffset() + deltaX;
-    auto newY = curve->getYOffset() + deltaY;
+void CurveController::centerPositionChanged(double deltaX, double deltaY){
+    auto scale = curve->getScale();
+    double scaleK = scale <= 0 ? 1 + (scale / 1000) :  1 + (scale / 100);
+
+    auto newX = curve->getXOffset() + deltaX / scaleK;
+    auto newY = curve->getYOffset() + deltaY / scaleK;
     xGroup->setValue(newX);
     yGroup->setValue(newY);
     curve->setXOffset(newX);

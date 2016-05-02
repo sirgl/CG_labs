@@ -25,7 +25,7 @@ public:
     BezierCurve *getCurve() const;
     void setCurve(BezierCurve *value);
 public slots:
-    void centerPositionChanged(int deltaX, int deltaY);
+    void centerPositionChanged(double deltaX, double deltaY);
 private slots:
     void xChanged(int x);
     void yChanged(int y);

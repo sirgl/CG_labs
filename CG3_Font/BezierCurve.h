@@ -13,10 +13,12 @@
 class BezierCurve : public Drawable{
     Q_OBJECT
 
+    const double ERR = 10e-10;
+
     bool fill;
     bool outline;
-    int xOffset;
-    int yOffset;
+    double xOffset;
+    double yOffset;
     double scale;
 
     double minY;
@@ -29,8 +31,8 @@ class BezierCurve : public Drawable{
     QVector<QVector<QVector<BezierPoint>>> primitiveCurvesSegments;
 
     QVector<QVector<BezierPoint>> separateToPrimitiveSegments(QVector<BezierPoint> points);
-    QVector<BezierPoint> intersectBezierSegmentWithHorizontalLine(QVector<BezierPoint> bezier, QVector<BezierPoint> nextLine, double y);
-    QVector<BezierPoint> intersectLineWithHorizontalLine(QVector<BezierPoint> line, QVector<BezierPoint> nextLine, double y);
+    QVector<BezierPoint> intersectBezierSegmentWithHorizontalLine(QVector<BezierPoint> bezier, double y);
+    QVector<BezierPoint> intersectLineWithHorizontalLine(QVector<BezierPoint> line, double y);
     static BezierPoint getBezierPointByParameter(BezierPoint p0, BezierPoint p1, BezierPoint p2, double t);
     QVector<QPair<BezierPoint, BezierPoint>> getFillingArea();
     void extractPrimitiveCurveSegments(QImage* image);
@@ -56,11 +58,11 @@ public:
 
 
     BezierPoint scaleAndShiftPoint(BezierPoint point);
-    int getXOffset() const;
-    void setXOffset(int value);
+    double getXOffset() const;
+    void setXOffset(double value);
 
-    int getYOffset() const;
-    void setYOffset(int value);
+    double getYOffset() const;
+    void setYOffset(double value);
 
     double getScale() const;
     void setScale(int value);
