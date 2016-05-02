@@ -218,16 +218,21 @@ QVector<BezierPoint> BezierCurve::intersectBezierSegmentWithHorizontalLine(QVect
     double t1 = ((y0 - y1) + sqrt(discriminant)) / denominator;
     double t2 = ((y0 - y1) - sqrt(discriminant)) / denominator;
 
-    if(t1 > 0 && (t1 - 1) <= 10e-10) {
+    if(t1 > 0 && (t1 - 1) <= ERR) {
         auto point = getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t1);
         intersectionPoints.push_back(point);
-        if(fabs(t1 - t2) < 10e-15) {
-            return intersectionPoints;
+        if(fabs(t1 - t2) < ERR) {
+            auto yt1 = y0 + (y1 - y0) * t1;
+            auto yt2 = y2 + (y1 - y2) * t1;
+            //when tangent line to point is parallel to Ox:
+            if(!(fabs(yt1 - yt2) < 10e-5)) {
+                return intersectionPoints;
+            }
         }
 //        auto p1Intersections = handleBezierBorderConditions(point, bezier, nextLine, y, t1);
 //        std::copy(p1Intersections.begin(), p1Intersections.end(), std::back_inserter(intersectionPoints));
     }
-    if(t2 > 0 && (t2 - 1) <=  10e-10) {
+    if(t2 > 0 && (t2 - 1) <=  ERR) {
         auto point = getBezierPointByParameter(bezier[0], bezier[1], bezier[2], t2);
         intersectionPoints.push_back(point);
 //        auto p2Intersections = handleBezierBorderConditions(point, bezier, nextLine, y, t2);
@@ -267,7 +272,7 @@ QVector<QPair<BezierPoint, BezierPoint> > BezierCurve::getFillingArea(){
     QVector<QPair<BezierPoint, BezierPoint> > fillingLines;
     for(int y = std::round(minY) - 1; y < std::round(maxY) + 1; ++y){
         QVector<BezierPoint> intersections;
-//        y = 72; // DEBUG
+//        y = -113; // DEBUG
         for(auto curve : primitiveCurvesSegments) {
             for(int i = 0; i < curve.size(); ++i) {
                 QVector<BezierPoint> segment = curve[i];
