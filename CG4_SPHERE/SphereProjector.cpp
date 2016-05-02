@@ -34,18 +34,21 @@ QPair<double, double> SphereProjector::computeSphericalCoordinates(QVector3D vec
     auto y = vector.y();
     auto z = vector.z();
     auto theta = std::acos(y / sqrt(sqr(x) + sqr(y) + sqr(z)));
-    auto phi = std::atan(z / x);
+//    auto phi = std::atan(z / x);
+    auto phi = std::atan2(z, x);
     return qMakePair(theta, phi);
 }
 
 QVector2D SphereProjector::computeTextureCoordinates(double theta, double phi){
-    auto newPhi = (((double)normalizedY / 360) * 2 * M_PI) + phi + 0.5 * M_PI;
-    newPhi = std::fmod(newPhi, M_PI);
+//    auto newPhi = (((double)normalizedY / 360) * 2 * M_PI) + phi + 0.5 * M_PI;
+    auto newPhi = (((double)normalizedY / 360) * 2 * M_PI) + phi + M_PI;
+//    newPhi = std::fmod(newPhi, M_PI);
+    newPhi = std::fmod(newPhi, 2 * M_PI);
 
     auto newTheta = (((double)normalizedX / 360) * 2 * M_PI) + theta;
     newTheta = std::fmod(newTheta, M_PI);
 
-    auto u = (newPhi / M_PI);
+    auto u = (newPhi / (2 * M_PI));
     auto v = 1 -(newTheta / (M_PI));
 //    auto v = theta / (2 * M_PI) + 0.5;
 //    auto u = phi / M_PI + 0.5;
@@ -54,8 +57,8 @@ QVector2D SphereProjector::computeTextureCoordinates(double theta, double phi){
 
 QColor SphereProjector::computeColorByTextureCoordinates(double u, double v){ // u,v from 0 to 1
     if(filtration == FiltrationType::nearest) {
-        auto newU = 0.5 + u * texture->height();
-        auto newV = 0.5 + v * texture->width();
+        auto newU = 0.5 + u * texture->width();
+        auto newV = 0.5 + v * texture->height();
         auto uRounded = std::round(newU);
         auto vRounded = std::round(newV);
         return DrawingTools::getColor(texture, uRounded, vRounded);
@@ -154,6 +157,15 @@ SphereProjector::SphereProjector() : r(0), scale(0), rScaled(0), x(0), y(0), fil
 }
 
 void SphereProjector::draw(QImage *image){
+    QVector3D c;
+    computeSphereIntersectionCoordinates(QVector2D(0,0), c);
+    auto sc = computeSphericalCoordinates(c);
+    auto theta = sc.first;
+    auto phi = sc.second;
+    auto tc = computeTextureCoordinates(sc.first, sc.second);
+    auto col = computeColorByTextureCoordinates(tc.x(), tc.y());
+    auto d = 0;
+
     auto height = image->height();
     auto width = image->width();
     for(int y = 0; y < height; y++) {
