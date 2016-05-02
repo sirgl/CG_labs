@@ -76,10 +76,10 @@ void MainWindow::initCurveController(){
 
     SphereProjector* projector = new  SphereProjector();
     projector->setScale(0);
-    projector->setX(10);
+    projector->setX(0);
     projector->setY(0);
     projector->setFiltration(FiltrationType::bilinear);
-    projector->setTexutureFile("Lenna.png");
+    projector->setTexutureFile("earth.jpg");
 
     canvasWidget->add(projector);
 

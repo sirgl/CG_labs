@@ -33,23 +33,22 @@ QPair<double, double> SphereProjector::computeSphericalCoordinates(QVector3D vec
     auto x = vector.x();
     auto y = vector.y();
     auto z = vector.z();
-    auto theta = std::acos(x / sqrt(sqr(x) + sqr(y) + sqr(z)));
-    auto phi = std::atan(y / x);
+    auto theta = std::acos(y / sqrt(sqr(x) + sqr(y) + sqr(z)));
+    auto phi = std::atan(z / x);
     return qMakePair(theta, phi);
 }
 
 QVector2D SphereProjector::computeTextureCoordinates(double theta, double phi){
-    auto newPhi = (((double)normalizedX / 360) * 2 * M_PI) + phi + 0.5 * M_PI;
-    double intpart;
-    double fracpart = std::modf(newPhi / ( M_PI), &intpart);
-    newPhi = fracpart * (M_PI) - 0.5 * M_PI;
+    auto newPhi = (((double)normalizedY / 360) * 2 * M_PI) + phi + 0.5 * M_PI;
+    newPhi = std::fmod(newPhi, M_PI);
 
-    auto newTheta = (((double)normalizedY / 360) * 2 * M_PI) + theta;
-    fracpart = std::modf(newTheta / (2 * M_PI), &intpart);
-    newTheta = fracpart * (2 * M_PI);
+    auto newTheta = (((double)normalizedX / 360) * 2 * M_PI) + theta;
+    newTheta = std::fmod(newTheta, M_PI);
 
-    auto u = (newPhi / M_PI + 0.5);
-    auto v = (newTheta / (2 * M_PI));
+    auto u = (newPhi / M_PI);
+    auto v = 1 -(newTheta / (M_PI));
+//    auto v = theta / (2 * M_PI) + 0.5;
+//    auto u = phi / M_PI + 0.5;
     return QVector2D(u, v);
 }
 
