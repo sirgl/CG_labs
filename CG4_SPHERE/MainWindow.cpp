@@ -76,7 +76,7 @@ void MainWindow::initCurveController(){
 
     SphereProjector* projector = new  SphereProjector();
     projector->setScale(0);
-    projector->setX(0);
+    projector->setX(90);
     projector->setY(0);
     projector->setFiltration(FiltrationType::bilinear);
     projector->setTexutureFile("earth.jpg");

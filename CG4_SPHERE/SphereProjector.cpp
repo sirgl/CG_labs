@@ -6,7 +6,8 @@
 #include <cmath>
 #include "LoadingFileException.h"
 #include "ParserException.h"
-
+#include <QGraphicsRotation>
+#include <QTransform>
 
 using Tools::sqr;
 
@@ -34,29 +35,14 @@ QPair<double, double> SphereProjector::computeSphericalCoordinates(QVector3D vec
     auto y = vector.y();
     auto z = vector.z();
     auto theta = std::acos(y / sqrt(sqr(x) + sqr(y) + sqr(z)));
-//    auto phi = std::atan(z / x);
     auto phi = std::atan2(z, x);
     return qMakePair(theta, phi);
 }
 
 QVector2D SphereProjector::computeTextureCoordinates(double theta, double phi){
-//    auto newPhi = (((double)normalizedY / 360) * 2 * M_PI) + phi + 0.5 * M_PI;
-    auto newPhi = (((double)normalizedX / 360) * 2 * M_PI) + phi + M_PI;
-//    newPhi = std::fmod(newPhi, M_PI);
-    newPhi = std::fmod(newPhi, 2 * M_PI);
 
-    auto newTheta = (((double)normalizedY / 360) * 2 * M_PI) + theta;
-    newTheta = std::fmod(newTheta, M_PI);
-//    auto normTheta = std::fmod(newTheta, 2 * M_PI);
-//    if(normTheta < M_PI) {
-//        newTheta = normTheta;
-//    } else {
-//        newTheta = 2 * M_PI - normTheta;
-//        newPhi = 2 * M_PI - newPhi;
-//    }
-
-    auto u = (newPhi / (2 * M_PI));
-    auto v = 1 -(newTheta / (M_PI));
+    auto u = ((phi + M_PI) / (2 * M_PI));
+    auto v = 1 -(theta / (M_PI));
 //    auto v = theta / (2 * M_PI) + 0.5;
 //    auto u = phi / M_PI + 0.5;
     return QVector2D(u, v);
@@ -164,15 +150,6 @@ SphereProjector::SphereProjector() : r(0), scale(0), rScaled(0), x(0), y(0), fil
 }
 
 void SphereProjector::draw(QImage *image){
-    QVector3D c;
-    computeSphereIntersectionCoordinates(QVector2D(0,0), c);
-    auto sc = computeSphericalCoordinates(c);
-    auto theta = sc.first;
-    auto phi = sc.second;
-    auto tc = computeTextureCoordinates(sc.first, sc.second);
-    auto col = computeColorByTextureCoordinates(tc.x(), tc.y());
-    auto d = 0;
-
     auto height = image->height();
     auto width = image->width();
     for(int y = 0; y < height; y++) {
@@ -186,7 +163,14 @@ void SphereProjector::draw(QImage *image){
                 continue;
             }
 
-            auto sphericalCoords = computeSphericalCoordinates(coords);
+            QMatrix4x4 ym;
+            ym.rotate(normalizedX, 0, 1, 0);
+            QMatrix4x4 zm;
+            zm.rotate(normalizedY, 0, 0, 1);
+            auto coords2 = coords * ym;
+            auto coords3 = coords2 * zm;
+
+            auto sphericalCoords = computeSphericalCoordinates(coords3);
             auto textureCoords = computeTextureCoordinates(sphericalCoords.first, sphericalCoords.second);
             auto color = computeColorByTextureCoordinates(textureCoords.x(), textureCoords.y());
             DrawingTools::drawPixel(image, Point(newX, newY), &color);
