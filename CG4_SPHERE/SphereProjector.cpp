@@ -59,8 +59,8 @@ QColor SphereProjector::computeColorByTextureCoordinates(double u, double v){ //
         if (std::isnan(u) || std::isnan(v)) {
             return QColor(0, 0, 0);
         }
-        u *= texture->width();
-        v *= texture->height();
+        u *= 0.5 + texture->width();
+        v *= 0.5 + texture->height();
         int x = std::floor(u);
         int y = std::floor(v);
         double u_ratio = u - x;
